@@ -1,0 +1,23 @@
+\begin{table}[tbp]
+\centering
+\setlength{\tabcolsep}{1.19ex}
+\begin{tabular}{lrrrrrrrrr}
+\toprule
+           & \multicolumn{4}{c}{Expanded states} & \multicolumn{5}{c}{Mean $h$-values}                                 \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-10}
+Domain     & \hnnbfs   & \hnndfs & \hnnrw & \hnnbfsrw & \fssp & \bfs  & \dfs   & \rw   & \bfsrw \\
+\midrule                                                                                
+Blocks     & 5047.06   & 205.59  & 87.00  & \textbf{80.76}     & 18.77 & 10.77 & 166.11 & 28.09 & 38.43  \\
+Grid       & 431.21    & 4102.36 & \textbf{263.56} & 276.23    & 16.59 & 6.77  & 184.59 & 21.06 & 22.46  \\
+N-Puzzle   & 1477.23   & 1092.51 & 237.64 & \textbf{177.12}    & 21.97 & 10.42 & 187.51 & 96.29 & 90.65  \\
+Rovers     & 91.82     & 27.76   & 21.89  & \textbf{18.85}     & 6.45  & 4.65  & 27.11  & 25.90  & 24.91  \\
+Scanalyzer & 328.03    & 263.53  & 70.62  & \textbf{53.59}     & 8.34  & 2.98  & 146.17 & 90.30  & 87.86  \\
+Transport  & 215.09    & 1321.10 & \textbf{110.98} & 130.14    & 12.23 & 3.27  & 196.12 & 95.20  & 88.59  \\
+VisitAll   & 170.45    & 44.58   & 21.99  & \textbf{21.51}     & 8.97  & 2.74  & 28.48  & 22.48 & 22.37  \\ 
+\midrule
+Geo.~mean  & 446.72    & 326.66  & 79.78  & 73.12     & 12.21 & 5.14  & 103.50  & 43.30  & 44.38  \\     
+\bottomrule
+\end{tabular}%
+\caption{Comparison of sampling strategies \bfs, \dfs, \rw, and \bfsrw on estimated $h$-values. Expanded states of \gbfs with learned heuristics, and mean $h$-values over the entire forward state space (FS) and the generated sample sets.}
+\label{tab:small-h-estimate}
+\end{table}

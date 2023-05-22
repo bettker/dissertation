@@ -1,0 +1,73 @@
+\newcommand{\mr}[2][noinline]{\todo[#1,fancyline,color=blue!20]{#2}}
+\newcommand{\mri}[2][inline]{\todo[#1,fancyline,color=blue!20]{#2}}
+\newcommand{\agp}[2][noinline]{\todo[color=orange!60,linecolor={orange!100},#1,fancyline,author=André]{#2}}
+\newcommand{\agpi}[2][inline]{\todo[color=orange!60,linecolor={orange!100},#1,fancyline,author=André]{#2}}
+\newcommand{\rv}[2][noinline]{\todo[color=red!50,linecolor={red!100},#1,fancyline,author=Rafael]{#2}}
+\newcommand{\rvi}[2][inline]{\todo[color=red!50,linecolor={red!100},#1,fancyline,author=Rafael]{#2}}
+
+\providecommand{\floor}[1]{\ensuremath{\left\lfloor #1\right\rfloor}}
+\providecommand{\ceil}[1]{\ensuremath{\left\lceil #1\right\rceil}}
+
+\providecommand{\multiset}[1]{\ensuremath{\{\!\!\{#1\}\!\!\}}}
+\providecommand{\sas}{\ensuremath{\text{SAS}^{+}}\xspace}
+\providecommand{\strips}{STRIPS\xspace}
+\providecommand{\astar}{\ensuremath{\text{A}^{*}}\xspace}
+\providecommand{\gbfs}{\ensuremath{\text{GBFS}}\xspace}
+\providecommand{\wida}{\ensuremath{\text{W-IDA}^{*}}\xspace}
+\providecommand{\ida}{\ensuremath{\text{IDA}^{*}}\xspace}
+\providecommand{\hvalue}[1]{\ensuremath{h^{#1}}\xspace}
+\providecommand{\hff}{\hvalue{\text{FF}}}
+\providecommand{\hgc}{\hvalue{\text{GC}}}
+\providecommand{\hstar}{\hvalue{*}}
+\providecommand{\hlmc}{\hvalue{\text{lm-c}}}
+\providecommand{\hmax}{\hvalue{\text{max}}}
+\providecommand{\hadd}{\hvalue{\text{add}}}
+\providecommand{\hnn}{$\hat h$\xspace}
+\providecommand{\hnrsl}{$\hat h^{\text{N-RSL}}$\xspace}
+\providecommand{\hboot}{$\hat h^{\text{Boot}}$\xspace}
+\providecommand{\hgc}{\hvalue{\text{gc}}}
+\providecommand{\hhgn}{\hvalue{\text{HGN}}}
+\providecommand{\unit}{/1\xspace}
+\providecommand{\hvfc}{\text{SUI}\xspace}
+\providecommand{\hmin}{\text{SAI}\xspace}
+\providecommand{\rw}{{RW}\xspace}
+\providecommand{\bfs}{{BFS}\xspace}
+\providecommand{\dfs}{{DFS}\xspace}
+\providecommand{\bfsrw}{\text{FSM}\xspace}
+\providecommand{\nn}{{NN}\xspace}
+\providecommand{\fssp}{{FS}\xspace}
+\providecommand{\bssp}{{BS}\xspace}
+\providecommand{\hnnrs}{$\hat h{^{20\%}_\text{\meanfx}}$\xspace}
+\providecommand{\hnnrsfifty}{$\hat h{^{50\%}_\text{\meanfx}}$\xspace}
+\providecommand{\hffexp}{$h^{FF}_{exp}$}
+\providecommand{\hgcexp}{$h^{GC}_{exp}$}
+\providecommand{\hnnbase}{$\hat h_{0}$\xspace}
+\providecommand{\hnnbfs}{$\hat h_{\text{bfs}}$\xspace}
+\providecommand{\hnndfs}{$\hat h_{\text{dfs}}$\xspace}
+\providecommand{\hnnrw}{$\hat h_{\text{rw}}$\xspace}
+\providecommand{\hnnbfsrw}{$\hat h_\text{fsm}$\xspace}
+\providecommand{\hnnbfsrwl}[1]{\ensuremath{\hat h_{#1}}\xspace}
+\providecommand{\hnnnomutex}{\ensuremath{\hat h^{'}}\xspace}
+\providecommand{\hnnnomutexl}[1]{\ensuremath{\hat h^{'}_{#1}}\xspace}
+\providecommand{\hnnrsp}[1]{\ensuremath{\hat h_\text{fsm}/^{#1\%}_{\text{RS}}}\xspace}
+\providecommand{\hnnrslp}[2]{\ensuremath{\hat h_\text{fsm}^{#1}/^{#2\%}_{\text{RS}}}\xspace}
+\providecommand{\define}[1]{#1}
+\providecommand{\facts}{\ensuremath{L_F}\xspace}
+\providecommand{\meanfx}{\ensuremath{L_{\overline{F}}}\xspace}
+\providecommand{\default}{\ensuremath{L_{200}}\xspace}
+\providecommand{\distfarthest}{\ensuremath{d^*}\xspace}
+
+%% mathematical definitions
+\ifcsname dom\endcsname\else\DeclareMathOperator{\dom}{dom}\fi
+\DeclareMathOperator{\pre}{pre}
+\DeclareMathOperator{\eff}{eff}
+\DeclareMathOperator{\sucs}{succ}
+\DeclareMathOperator{\pred}{pred}
+\DeclareMathOperator{\functioninitial}{initial\_state}
+\DeclareMathOperator{\functiongoal}{goal\_condition}
+\DeclareMathOperator{\mutex}{mutex}
+\DeclareMathOperator{\del}{del}
+\DeclareMathOperator{\add}{add}
+\ifcsname R\endcsname\else\newcommand{\R}{\ensuremath{\mathbb{R}}}\fi
+
+\newtheorem{property}{Property}[section]

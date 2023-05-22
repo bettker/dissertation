@@ -1,1 +1,71 @@
-\chapter{Sample Generation}\label{sec:sampling}
+\chapter{Sample Generation}
+\label{sec:sampling}
+
+We aim to investigate sample generation systematically. Therefore, we focus on how three aspects of sample generation influence the performance of the learned heuristic to guide a search algorithm: the distribution of states $s_i$ in the state space part of the sample set, the quality of the estimates $h_i$ of samples with respect to the $\hstar$-value, and the methods that generate sample sets. In our setting, learning a heuristic function requires a set of samples $(s_1,h_1),\ldots,(s_N,h_N)$, where each sample $(s_i,h_i), i\in[N]$ consists of a state $s_i$ and a cost-to-goal estimate (or $h$-value) $h_i$.
+
+We restrict our study to generalizing over planning tasks with initial states part of the same forward state space~(\fssp) and a fixed goal condition. We study model-free approaches with access to predecessors and successors of partial states through a black-box function, the goal condition, and the domain of each variable. We also study model-based approaches that have access to mutexes derived from a \sas model. We approach first, in Section~\ref{sec:generation}, the generation of states, and then, in Section~\ref{sec:hvalue}, the estimation of the cost-to-goal. In both sections, we discuss approaches from the literature and introduce new methods. The new methods are a novel sampling strategy combining regression by breadth-first search with random walk, an adaptive regression limit, and two improvement methods for cost-to-goal estimates.
+
+\section{Generation of States}
+\label{sec:generation}
+
+Unlike other domains in machine learning, where datasets of samples are often collected in real-world experiments and need to be manually annotated and curated, sample generation here is an algorithmic problem since we have access to the state space and can compute cost-to-goal estimates. Approaches from the literature to generate the states include methods based on progression from one or more initial states, random sampling of the state space, or regression from the goal. In both progression and regression, one can apply different expansion strategies such as random walks, breadth- or depth-first searches, or teacher searches which include ``on policy'' searches in methods using reinforcement learning or bootstrapping~\cite{Arfaee.etal/2011}. A problem in progression and random sampling is obtaining the cost-to-goal estimates. Without access to efficiently computable heuristic functions, or in model-free approaches, these values have to be obtained by search, which can have a cost exponential in the size of the task. To remain less dependent on models than logic-based methods and also more general, we focus on regression for which an upper bound on the cost-to-goal is readily available, discussed in Sections~\ref{sec:sampling-generation}~and~\ref{sec:rollout-depth-limit}. Still, regression leads to partial states, so the problem of generating complete states is addressed in Section~\ref{sec:sample-completion}. Random sampling is also discussed in Section~\ref{sec:random-samples-theory}.
+
+\subsection{Sampling by Regression}
+\label{sec:sampling-generation}
+
+To generate samples, we expand the backward state space through regression. We consider expansion by breadth-first search (\bfs) and depth-first search (\dfs), by random walks (\rw), as well as a combination of BFS with random walks explained below. A regression rollout is defined as a series of state expansions, and it stops if the last expanded state has no predecessors or is at the depth limit $L$. The sampling generation process stops if the number of required samples $N$ has been reached. Note that random walks can have multiple rollouts due to $L$, while \bfs and \dfs only have one -- except if the number of states in the backward state space is less than $N$, in which case they need to perform more than one rollout.
+
+During expansion, we optionally use mutexes obtained from an analysis of the planning task -- in our case as computed by Fast Downward~\cite{Helmert/2006} -- to discard partial states which cannot be completed to complete states without violating a mutex, as described in Section~\ref{sec:sample-completion}. We also discard repeated partial states for random walk rollouts, such that a single rollout never cycles, although the same partial state may be sampled several times in different rollouts. Starting from $h(s^*)=0$, a state $s'\in\pred(s,o)$ obtained by applying an operator $o$ backwards to state $s$ has a cost-to-goal estimate $h(s')=h(s)+\text{cost}(o)$. We reset to $h(s)=0$ the cost-to-goal estimate for samples $s\subseteq s^*$ that satisfy the goal condition. States are added to the sample set when generated in the random walks and when expanded in BFS and DFS. In all methods, operators backward applicable to a state are applied in random order.
+
+Different expansion strategies generate sample sets with varying frequencies of  optimal distances from the goal. In our experience, good coverage of states close to the goal, such as those obtained by BFS or random walks, is useful, as is the greater depth obtained by DFS or random walks. However, random walks from the goal often sample states close to the goal multiple times, and DFS can lead to a concentration of distant samples from the goal. Based on these observations, we propose a novel combination of BFS and random walks called \bfsrw that aims to have a good coverage close to the goal and a diverse set of samples from the remaining state space. \bfsrw has two phases. In the first phase, a fixed percentage $p_\bfsrw$ of the $N$ samples is generated by BFS. (Note that $p_\bfsrw$ can additionally represent time and memory limitations -- in this case, \bfs stops once either of them is reached first.) The \bfs expands a state from layer $k$ that generates $n$ states from layer $k+1$, and these states are sampled only if the current total samples plus $n$ are within $p_{\bfsrw}N$ samples; otherwise, no states are sampled and \bfs expands another state. Let $Q$ be the states of the set of samples that have not been expanded. The second phase generates multiple random walk rollouts, each starting from a state in $Q$ chosen randomly with a complete replacement only after all states have been selected once. This is repeated until reaching $N$ samples in the sample set. During a random walk, states sampled in the BFS phase are discarded.
+
+\subsection{Maximum Regression Limit}
+\label{sec:rollout-depth-limit}
+
+A simple strategy to limit the expansion depth is to define some maximum limit $L$. This has been used in previous work, e.g.,~by \citeyear{Yu.etal/2020} and \citeyear{OToole/2022} with $L=200$ and $L=500$, respectively. A fixed limit is not the optimal choice for tasks with state spaces of different diameters or different maximum distances to a fixed goal when we aim for a representative sample of the state space. This is a problem in particular for regression: if the maximum regression limit $L$ overestimates the maximum distance-to-goal by much, the corresponding cost-to-goal estimates will be too large; if it underestimates it, samples may be concentrated too close to the goal.
+
+Therefore, the most effective maximum regression limit for a fixed goal should be defined as a function of the longest distance \distfarthest from the goal state to any other potential initial state. For BFS, \distfarthest would be the ideal estimate; for DFS and random walks, higher limits are required since they do not follow the shortest paths. Since \distfarthest, in general, is unknown, we propose to define a maximum regression limit $L$ by two adaptive, approximated methods, according to the input task parameters, the first of which is model-free and the second model-based. The first is a regression limit that equals the number of facts $L=F=|\mathcal{F}(s_0)|$. The second is to set $L=\bar F=\ceil{\facts/\overline{\eff}}$ where $\overline{\eff}=\sum_{o\in \mathcal{O}} |\eff(o)|/|\mathcal{O}|$, i.e.,~the number of facts per mean number of effects in the operators.
+
+\subsection{Sample Completion}
+\label{sec:sample-completion}
+
+Regression sampling generates a set of partial states, while the NN is trained on and receives as input complete states during the search. Each partial state can be completed by assigning a value $s(v)\in\dom(v)$ to all fact pairs $(v,s(v))$ where $s(v)=\bot$. Since it makes no assumptions except the domains, we consider this strategy model-free. We further study two stronger methods of generating complete states: a model-based one that uses mutexes and an ideal completion that only generates states that are reachable from the initial states of interest.
+
+The model-based method also assigns a random value $s(v)\in\dom(v)$ to each undefined variable but excludes states that do not satisfy mutexes derived from the planning task. This is achieved by rejection sampling, where the undefined variables are processed in random order and set to a random value that does not violate the mutexes. If the state could not be completed in $10$\,K trial orders, we leave the facts undefined, i.e., set to false (zero)\footnote{Empirically this case is negligible since it occurs in about $0.1\,\%$ of the samples, in four of nine domains.}.
+
+The model-based solution can still generate states that can never be reached during the search. To study the effect of generating only relevant states, we therefore also include an ideal state completion method. This method applies only to small tasks, where we can enumerate the complete forward state space \fssp of the initial state $s_0$. Then, to complete a partial state $s$ we sample a random state from $s~\cap$~\fssp. Since we sample by regression for some states $s~\cap$~\fssp may be empty; such states are discarded during regression.
+
+\subsection{Randomly Generated Samples}
+\label{sec:random-samples-theory}
+
+\citeyear{OToole/2022} have shown that adding randomly generated samples to a set of samples generated by expansion improves the performance of the search algorithm guided by the learned heuristic. They propose to set the cost-to-goal estimate for randomly generated samples to $L+1$ for a maximum regression limit of $L$. To study the effect of randomly generated samples, we include this method in our study. These samples are generated from fully undefined states using the model-based technique described in the previous section. If the generated state $s$ is already part of the sample set, i.e.,~$s = s_i$ for some $i\in[N]$ it receives cost-to-goal estimate $h_i$, otherwise the cost estimate $1+\max_{i\in[N]} h_i$ that is larger than all samples estimates. For simplicity, from this point on we refer to ``randomly generated samples'' as ``random samples''.
+
+\section{Improving Cost-to-Goal Estimates}
+\label{sec:hvalue}
+
+We start by observing that cost-to-goal estimates never underestimate the true cost-to-goal $h^{*}$, as follows.
+
+\begin{property}
+    \label{prop:hvalue}
+    The cost-to-goal estimate $h(s)$ of a sample $s$ obtained by regression satisfies $h(s)\geq h^*(s)$.
+\end{property}
+\begin{proof}
+    This follows simply because each estimate is witnessed by a plan. As observed in Section~\ref{sec:background}, a valid regression sequence $\rho=(o_1,\ldots,o_k)$ generates a sequence of partial states that can reach the goal in at most $k$ steps and with cost at most $\sum_{i\in[k]}\text{cost}(o_i)$, which cannot be lower than the optimal cost.
+\end{proof}
+
+In general, we expect better $h$-value estimates to lead to better-learned heuristics, and in turn to less expanded states during a search, although this is not necessarily the case \cite{Holte/2010}. Therefore, we apply two simple procedures that improve the cost-to-goal estimates but maintain \cref{prop:hvalue}. The first, dubbed \hmin, minimizes estimates over repeated samples, and the second, \hvfc, over successors of samples.
+
+\subsection{Improvement of Repeated Samples}
+\label{sec:hmin}
+
+In most state spaces, it is common for a state to be sampled in more than one random walk rollout, ending up with multiple duplicates with different estimates. Thus, for all sampled states $s$ we update each cost-to-goal estimate to the best estimate $h(s) = \min\{h_i \mid s=s_i, i\in[N]\}$. Since different partial states can generate identical complete states, the improvement is applied to partial states as well as complete states. We call this procedure \emph{sample improvement} (\hmin). Choosing the minimum $h$-value is clearly sound since, in all cases, we have valid plans from a regression that witness these distances; for the same reason, \cref{prop:hvalue} still holds.
+
+\subsection{Improvement over Successors}
+\label{sec:hvfc}
+
+Besides sampling the same states, it is common to sample states that are neighbors in the state space, particularly for states close to the goal. This can be used to improve the cost-to-goal estimates, as follows. Consider a directed graph $G=(V,A)$ over all sampled partial states, i.e.,~$V=\{s_i\mid i\in[N]\}$. For every pair of states $s,t\in V$ such that for some operator $o\in\mathcal{O}$ applicable to $s$ we have $\sucs(s,o)\subseteq t$, we add an arc $(s,t)$ of length $\text{cost}(o)$ to $A$. (Unlike in regression, if $\pre(o)$ mentions an undefined variable in $s$ then $o$ is not applicable.) For fast subset, we keep all samples in a trie and search for each successor in the states that are supersets. For partial states generated by regression, by construction, at least one such successor exists, except for the goal state $s^*$. We then compute the shortest paths to the goal in graph $G$ (e.g.,~via the Dijkstra algorithm), and update the cost-to-goal estimates with these distances. We call this procedure \emph{successor improvement} (\hvfc). As for \hmin, all distances are witnessed by plans, so \cref{prop:hvalue} is maintained.
+
+\section{Example}
+\label{sec:example}
+
+%Check the example of Fukunaga. We need: a small example that is able to demonstrate all techniques: regression, partial states, minimization, \bfs, random walks, etc.

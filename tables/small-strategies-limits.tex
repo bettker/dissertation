@@ -1,0 +1,20 @@
+\begin{table}[tbp]
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+Domain     & \distfarthest & $F$ & $\bar F$ & \default          & \facts            & \meanfx        \\
+\midrule
+Blocks     & 24            & 64  & 17       & 80.76          & \textbf{58.06} & 185.00          \\
+Grid       & 32            & 76  & 44       & 276.23         & 316.51         & \textbf{204.89} \\
+N-Puzzle   & 31            & 81  & 41       & 177.12         & 104.52         & \textbf{80.83}  \\
+Rovers     & 19            & 32  & 27       & 18.85          & 17.74          & \textbf{16.50}  \\
+Scanalyzer & 15            & 42  & 20       & \textbf{53.59} & 57.02          & 88.76           \\
+Transport  & 17            & 66  & 35       & 130.14         & 82.35          & \textbf{58.13}  \\
+VisitAll   & 15            & 31  & 17       & \textbf{21.51} & 25.61          & 29.96           \\
+\midrule
+Geo. mean  &               &     &          & 73.12          & 63.36          & 69.48           \\
+\bottomrule
+\end{tabular}
+\caption{State space information and expanded states of \gbfs guided by \hnn trained on \bfsrw samples with different regression limits and no $h$-value improvements. \distfarthest is the distance of the state most distant from a goal state.}
+\label{tab:small-strategies-limits}
+\end{table}

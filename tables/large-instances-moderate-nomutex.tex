@@ -1,0 +1,24 @@
+\begin{table}[tbp]
+\centering
+\begin{tabular}{lrrrrrrrr}
+    \toprule & \multicolumn{4}{c}{Coverage (\%)} & \multicolumn{4}{c}{Expanded states} \\
+    \cmidrule(lr){2-5} \cmidrule(lr){6-9}
+    Domain & \hnnbfsrwl{\facts} & \hnnbfsrwl{\meanfx} & \hnnnomutexl{\facts} & \hnnnomutexl{\meanfx} & \hnnbfsrwl{\facts} & \hnnbfsrwl{\meanfx} & \hnnnomutexl{\facts} & \hnnnomutexl{\meanfx} \\
+    \midrule
+    Blocks & 93.33 & 96.31 & \textbf{100.00} & \textbf{100.00} & 459205 & 15279 & 8927 & \textbf{8400} \\
+    Depot & 81.26 & 84.67 & 85.96 & \textbf{86.41}             & \textbf{45002} & 49629 & 55136 & 69342 \\
+    Grid & 76.56 & \textbf{81.11} & 41.33 & 38.33              & - & - & - & - \\
+    N-Puzzle & 21.64 & \textbf{95.50} & 7.42 & 35.33           & - & - & - & - \\
+    Pipes-NT & 17.80 & 17.78 & 17.82 & \textbf{18.07}          & \textbf{193039} & 211291 & 209366 & 205928 \\
+    Rovers & \textbf{13.92} & 13.33 & 13.67 & 13.53            & 203 & 115 & 106 & \textbf{99} \\
+    Scanalyzer & 66.44 & \textbf{67.78} & 66.15 & 66.67        & 12793 & 415 & 17475 & \textbf{367} \\
+    Storage & 3.94 & \textbf{9.11} & 1.67 & 8.33               & - & - & - & - \\
+    Transport & 75.53 & 85.97 & 81.42 & \textbf{87.50}         & 96642 & \textbf{46120} & 76756 & 65656 \\
+    VisitAll & \textbf{92.81} & 80.52 & 92.70 & 79.00          & \textbf{11515} & 20910 & 12972 & 47916 \\
+    \midrule
+    Mean & 54.32 & 63.21 & 50.81 & 53.32       & 27378 & 9574 & 15230 & 10461 \\
+    \bottomrule
+\end{tabular}
+\caption{Mean coverages and expanded states of the learned heuristics with both regression limit and their respective approaches not using mutexes (\hnnnomutex). Expanded states consider only the initial states solved by all heuristics; Grid, N-Puzzle and Storage had no common solved initial state. Geometric mean is used for the overall mean of expanded states.}
+\label{tab:large-instances-moderate-nomutex}
+\end{table}

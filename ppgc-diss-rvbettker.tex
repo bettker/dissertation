@@ -1,4 +1,4 @@
-\documentclass[ppgc,diss,english]{styles/iiufrgs}
+\documentclass[docs/ppgc,docs/diss,english]{iiufrgs}
 
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
@@ -6,6 +6,16 @@
 % \usepackage{palatino}
 % \usepackage{mathptmx}
 \usepackage[alf,abnt-emphasize=bf]{abntex2cite}
+
+\usepackage[textsize=tiny,colorinlistoftodos,prependcaption]{todonotes}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{enumitem}
+\usepackage[capitalize]{cleveref}
+\usepackage{booktabs}
+
+\input{definitions}
 
 \title{Understanding Sample Generation Strategies for Learning Heuristic Functions in Classical Planning}
 \translatedtitle{Compreendendo Estrat{\'e}gias de Amostragem para Aprendizagem de Fun{\c{c}}{\~o}es Heur{\'i}sticas em Planejamento Cl{\'a}ssico}
@@ -17,21 +27,19 @@
 
 \date{June}{2023}
 
-%\location{Porto Alegre}{RS}
-
 % nominata
 \renewcommand{\nominataReit}{Prof.~Carlos Andr{\'e} Bulh{\~o}es}
-\renewcommand{\nominataReitname}{Rector}
-\renewcommand{\nominataPRCA}{Prof.~Patricia Pranke}
-\renewcommand{\nominataPRCAname}{Vice-Rector}
+% \renewcommand{\nominataReitname}{Rector}
+\renewcommand{\nominataPRCA}{Prof\textsuperscript{a}.~Patricia Pranke}
+% \renewcommand{\nominataPRCAname}{Vice-Rector}
 \renewcommand{\nominataPRAPG}{Prof.~J{\'u}lio Ot{\'a}vio Jardim Barcellos}
-\renewcommand{\nominataPRAPGname}{Dean of Graduate Studies}
-\renewcommand{\nominataDir}{Prof.~Carla Maria Dal Sasso Freitas}
-\renewcommand{\nominataDirname}{Director of the Institute of Informatics}
-\providecommand{\nominataCoord}{Prof.~Alberto Egon Schaeffer Filho}
-\providecommand{\nominataCoordname}{Coordinator of the PPGC}
+% \renewcommand{\nominataPRAPGname}{Dean of Graduate Studies}
+\renewcommand{\nominataDir}{Prof\textsuperscript{a}.~Carla Maria Dal Sasso Freitas}
+% \renewcommand{\nominataDirname}{Director of the Institute of Informatics}
+\renewcommand{\nominataCoordPPGC}{Prof.~Alberto Egon Schaeffer Filho}
+% \renewcommand{\nominataCoordnamePPGC}{Coordinator of the PPGC}
 \renewcommand{\nominataBibchefe}{Alexsander Borges Ribeiro}
-\renewcommand{\nominataBibchefename}{Chief Librarian of the Institute of Informatics}
+% \renewcommand{\nominataBibchefename}{Chief Librarian of the Institute of Informatics}
 
 \begin{document}
 
