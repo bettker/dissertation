@@ -1,7 +1,9 @@
 \begin{table}[th]
+\caption{Mean coverage results of \hboot~\cite{Ferber.etal/2022} and \hnrsl~\cite{OToole/2022}, with results obtained from their respective papers, and our best learned heuristic trained with $100$\,K samples, from which $0$\,\%, $20$\,\% and $50$\,\% were randomly generated.}
+\label{tab:large-instances-moderate-100k}
+\addvspace{\baselineskip}
 \centering
 \begin{tabular}{lrrrrrr}
-    \toprule
     Domain & \hboot & \hnrsl & \hnnbfsrwl{\meanfx} & \hnnrs & \hnnrsfifty \\
     \midrule
     Blocks      & 0.00 & 91.50 & 99.96  & \textbf{100.00} & \textbf{100.00} \\
@@ -16,8 +18,5 @@
     VisitAll    & 17.00 & 95.40 & 84.52  & 99.04  & \textbf{99.70}  \\
     \midrule
     Mean & 45.40 & 58.80 & 61.50 & 72.82 & 70.56 \\
-    \bottomrule
 \end{tabular}
-\caption{Mean coverage results of \citeyear{Ferber.etal/2022} \hboot and \citeyear{OToole/2022} \hnrsl, with results obtained from their respective papers, and our best learned heuristic trained with $100$\,K samples, from which $0$\,\%, $20$\,\% and $50$\,\% were randomly generated.}
-\label{tab:large-instances-moderate-100k}
 \end{table}
