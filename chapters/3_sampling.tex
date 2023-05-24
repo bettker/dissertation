@@ -1,11 +1,13 @@
 \chapter{Sample Generation}
 \label{sec:sampling}
 
+Our objective is to conduct a systematic investigation of sample generation methods, driven by the desire to comprehend the impact of each modification on the performance of the sampling strategies. We explore the effects of each component in sample generation and propose new strategies to improve the performance of the learned heuristic. By systematically analyzing and comparing the outcomes of each strategy, we can gain valuable insights into the strengths and weaknesses of different sample generation approaches. This understanding will enable us to identify the key factors that contribute to improved performance and guide us to a better learned heuristic function.
+
+Therefore, we focus on how three aspects of sample generation influence the performance of the learned heuristic to guide a search algorithm: the distribution of states $s_i$ in the state space part of the sample set, the quality of the estimates $h_i$ of samples with respect to the $\hstar$-value, and the methods that generate sample sets. In our setting, learning a heuristic function requires a set of samples $(s_1,h_1),\ldots,(s_N,h_N)$, where each sample $(s_i,h_i), i\in[N]$ consists of a state $s_i$ and a cost-to-goal estimate $h_i$.
+
+We restrict our study to generalizing over planning tasks with initial states part of the same forward state space and a fixed goal condition. We study model-free approaches with access to predecessors and successors of partial states through a black-box function, the goal condition, and the domain of each variable. We also study model-based approaches that have access to mutexes derived from a \sas model. We approach first, in Section~\ref{sec:generation}, the generation of states, and then, in Section~\ref{sec:hvalue}, the estimation of the cost-to-goal. In both sections, we discuss approaches from the literature and introduce new methods. The new methods are a novel sampling strategy combining regression by breadth-first search with random walk, an adaptive regression limit, and two improvement methods for cost-to-goal estimates. Finally, we present the complete workflow of our algorithm and an example.
+
 \rvi{WIP from here until the end of the chapter}
-
-We aim to investigate sample generation systematically. Therefore, we focus on how three aspects of sample generation influence the performance of the learned heuristic to guide a search algorithm: the distribution of states $s_i$ in the state space part of the sample set, the quality of the estimates $h_i$ of samples with respect to the $\hstar$-value, and the methods that generate sample sets. In our setting, learning a heuristic function requires a set of samples $(s_1,h_1),\ldots,(s_N,h_N)$, where each sample $(s_i,h_i), i\in[N]$ consists of a state $s_i$ and a cost-to-goal estimate (or $h$-value) $h_i$.
-
-We restrict our study to generalizing over planning tasks with initial states part of the same forward state space~(\fssp) and a fixed goal condition. We study model-free approaches with access to predecessors and successors of partial states through a black-box function, the goal condition, and the domain of each variable. We also study model-based approaches that have access to mutexes derived from a \sas model. We approach first, in Section~\ref{sec:generation}, the generation of states, and then, in Section~\ref{sec:hvalue}, the estimation of the cost-to-goal. In both sections, we discuss approaches from the literature and introduce new methods. The new methods are a novel sampling strategy combining regression by breadth-first search with random walk, an adaptive regression limit, and two improvement methods for cost-to-goal estimates.
 
 \section{Generation of States}
 \label{sec:generation}
@@ -20,6 +22,72 @@ To generate samples, we expand the backward state space through regression. We c
 During expansion, we optionally use mutexes obtained from an analysis of the planning task -- in our case as computed by Fast Downward~\cite{Helmert/2006} -- to discard partial states which cannot be completed to complete states without violating a mutex, as described in Section~\ref{sec:sample-completion}. We also discard repeated partial states for random walk rollouts, such that a single rollout never cycles, although the same partial state may be sampled several times in different rollouts. Starting from $h(s^*)=0$, a state $s'\in\pred(s,o)$ obtained by applying an operator $o$ backwards to state $s$ has a cost-to-goal estimate $h(s')=h(s)+\text{cost}(o)$. We reset to $h(s)=0$ the cost-to-goal estimate for samples $s\subseteq s^*$ that satisfy the goal condition. States are added to the sample set when generated in the random walks and when expanded in BFS and DFS. In all methods, operators backward applicable to a state are applied in random order.
 
 Different expansion strategies generate sample sets with varying frequencies of  optimal distances from the goal. In our experience, good coverage of states close to the goal, such as those obtained by BFS or random walks, is useful, as is the greater depth obtained by DFS or random walks. However, random walks from the goal often sample states close to the goal multiple times, and DFS can lead to a concentration of distant samples from the goal. Based on these observations, we propose a novel combination of BFS and random walks called \bfsrw that aims to have a good coverage close to the goal and a diverse set of samples from the remaining state space. \bfsrw has two phases. In the first phase, a fixed percentage $p_\bfsrw$ of the $N$ samples is generated by BFS. (Note that $p_\bfsrw$ can additionally represent time and memory limitations -- in this case, \bfs stops once either of them is reached first.) The \bfs expands a state from layer $k$ that generates $n$ states from layer $k+1$, and these states are sampled only if the current total samples plus $n$ are within $p_{\bfsrw}N$ samples; otherwise, no states are sampled and \bfs expands another state. Let $Q$ be the states of the set of samples that have not been expanded. The second phase generates multiple random walk rollouts, each starting from a state in $Q$ chosen randomly with a complete replacement only after all states have been selected once. This is repeated until reaching $N$ samples in the sample set. During a random walk, states sampled in the BFS phase are discarded.
+
+\begin{algorithm}[H]
+    \SetAlgoLined
+
+    \SetKwData{Empty}{\{\}}
+    \SetKwData{N}{N}
+    \SetKwData{Nbfs}{N\textsubscript{bfs}}
+    \SetKwData{bfspct}{bfs\_pct}
+    \SetKwData{initstate}{s\textsubscript{0}}
+    \SetKwData{S}{S}
+    \SetKwData{Di}{D\textsubscript{k}}
+    \SetKwData{Dj}{D\textsubscript{k+1}}
+    \SetKwData{s}{s}
+    \SetKwData{sp}{s'}
+    \SetKwData{t}{t}
+    \SetKwData{O}{O}
+    \SetKwData{L}{L}
+    \SetKwData{Srw}{S\textsubscript{RW}}
+
+    \KwData{
+        \N: number of samples;
+        \bfspct: fraction of samples obtained by BFS;
+        \initstate: initial state;
+        \L: random walk rollout limit
+    }
+    \KwResult{\S: the sample set}
+    \SetKwProg{Fn}{Function}{:}{}
+
+    \SetKwFunction{FSM}{FSM}
+    \Fn{\FSM{\bfspct, \initstate, \L}}{
+        $\S \gets \{\initstate\}$ \\
+        $\O \gets \{\initstate\}$ \\
+        $\Di \gets \{\initstate\}$ \\
+        $\Dj \gets \Empty$ \\
+        $\Nbfs \gets \N \times \bfspct$ \\
+
+        \tcp{BFS step}
+        \While{$\lvert \S \rvert < \Nbfs$ \textnormal{\textbf{and}} $\Di \neq \emptyset$}{
+            Shuffles \Di \\
+            \ForEach{$\s \in \Di$}{
+                $\t \gets \{\sp \mid \sp \in pred(s)\ \textbf{and}\ \sp \notin \S$\} \\
+                \If{$\lvert \S \rvert + \lvert \t \rvert \le \Nbfs$}{
+                    $\Dj \gets \Dj \cup \t$ \\
+                    $\S \gets \S \cup \t$ \\
+                    $\O \gets \left(\ \O \cup \t\ \right) \backslash\ \{\s\}$ \\
+                }
+            }
+            $\Di \gets \Dj$ \\
+        }
+
+        \tcp{RW step}
+        \While{$\lvert \S \rvert < \N$}{
+            Shuffles \O \\
+            \ForEach{$\s \in \O$}{
+                $\Srw \gets$ set of $min(\L - h(\s), \N - \lvert \S \rvert)$ states sampled via RW starting from $\s$ \\
+                $\S \gets \S \cup \Srw$ \\
+                \lIf{$\lvert \S \rvert = \N$}{break}
+            }
+        }
+
+        \Return \S \\
+    }
+
+    \caption{FSM algorithm}
+    \label{alg:fsm}
+\end{algorithm}
 
 \subsection{Maximum Regression Limit}
 \label{sec:rollout-depth-limit}
@@ -67,7 +135,82 @@ In most state spaces, it is common for a state to be sampled in more than one ra
 
 Besides sampling the same states, it is common to sample states that are neighbors in the state space, particularly for states close to the goal. This can be used to improve the cost-to-goal estimates, as follows. Consider a directed graph $G=(V,A)$ over all sampled partial states, i.e.,~$V=\{s_i\mid i\in[N]\}$. For every pair of states $s,t\in V$ such that for some operator $o\in\mathcal{O}$ applicable to $s$ we have $\sucs(s,o)\subseteq t$, we add an arc $(s,t)$ of length $\text{cost}(o)$ to $A$. (Unlike in regression, if $\pre(o)$ mentions an undefined variable in $s$ then $o$ is not applicable.) For fast subset, we keep all samples in a trie and search for each successor in the states that are supersets. For partial states generated by regression, by construction, at least one such successor exists, except for the goal state $s^*$. We then compute the shortest paths to the goal in graph $G$ (e.g.,~via the Dijkstra algorithm), and update the cost-to-goal estimates with these distances. We call this procedure \emph{successor improvement} (\hvfc). As for \hmin, all distances are witnessed by plans, so \cref{prop:hvalue} is maintained.
 
-\section{Example}
+\begin{algorithm}[H]
+    \SetAlgoLined
+
+    \SetKwData{Empty}{\{\}}
+    \SetKwData{S}{S}
+    \SetKwData{s}{s}
+    \SetKwData{sp}{s'}
+    \SetKwData{su}{s'}
+    \SetKwData{t}{t}
+    \SetKwData{Ms}{M\textsubscript{succ}}
+    \SetKwData{Mh}{M\textsubscript{h}}
+
+    \KwData{
+        \S: the sample set
+    }
+    \KwResult{\S: the updated sample set}
+    \SetKwProg{Fn}{Function}{:}{}
+
+    \SetKwFunction{SUI}{SUI}
+    \Fn{\SUI{\S}}{
+        Let $\Mh$ be a mapping from state to integer \\
+        Let $\Ms$ be a mapping from state to list of states \\
+        \ForEach{$\s \in \S$}{
+            \If{$\s \notin \Ms$}{
+                \lForEach{$\sp \in succ(\s)$}{
+                    $\Ms[\s] \gets \Ms[\s] \cup \{\ \t \mid \t \in \S\ \textnormal{\textbf{and}}\ \sp \subseteq \t\ \}$
+                }
+            }
+            $\Mh[\s] \gets min(\Mh[\s], h(\s))$ \\
+        }
+
+        \Repeat{do not update any $h$-value}{
+            \ForEach{$\s \in \Ms$}{
+                \ForEach{$\t \in \Ms[\s]$}{
+                    \If{$\Mh[\s] > \Mh[\t] + 1$}{
+                        $\Mh[\s] \gets \Mh[\t] + 1$ \\
+                        $h(\s) \gets \Mh[\s]$
+                    }
+                }
+            }
+        }
+
+        \Return \S \\
+    }
+
+    \caption{SUI algorithm}
+    \label{alg:sui}
+\end{algorithm}
+
+\section{Workflow}
+\label{sec:workflow}
+
+\begin{figure}[h]
+\caption{Sample generation workflow.}
+\label{fig:workflow}
+\addvspace{\baselineskip}
+\centering
+\begin{tikzpicture}
+    \node[draw=black, fill=none, rounded corners, inner sep=5pt] (A) at (0.3,1.3) {Sampling by FSM};
+    \node[draw=black, fill=none, rounded corners, inner sep=5pt] (B) at (5.3,1.3) {SAI applied in partial states};
+    \node[draw=black, fill=none, rounded corners, inner sep=5pt] (C) at (9.15,1.3) {SUI};
+    \node[draw=black, fill=none, rounded corners, inner sep=5pt] (D) at (11.95,1.3) {State completion};
+    \node[draw=black, fill=none, rounded corners, inner sep=5pt] (E) at (10.8,0) {Generation of random samples};
+    \node[draw=black, fill=none, rounded corners, inner sep=5pt] (F) at (4.75,0) {SAI applied in complete states};
+    \node[draw=black, fill=none, rounded corners, inner sep=5pt] (G) at (0,0) {Learning stage};
+
+    \draw[-{Stealth[length=3mm, width=2mm]}] (A) -- (B);
+    \draw[-{Stealth[length=3mm, width=2mm]}] (B) -- (C);
+    \draw[-{Stealth[length=3mm, width=2mm]}] (C) -- (D);
+    \draw[-{Stealth[length=3mm, width=2mm]}] (12,0.94) -- (12,0.35); % \draw[-{Stealth[length=3mm, width=2mm]}] (D) -- (E);
+    \draw[-{Stealth[length=3mm, width=2mm]}] (E) -- (F);
+    \draw[-{Stealth[length=3mm, width=2mm]}] (F) -- (G);
+\end{tikzpicture}
+\end{figure}
+
+\subsection{Example}
 \label{sec:example}
 
 %Check the example of Fukunaga. We need: a small example that is able to demonstrate all techniques: regression, partial states, minimization, \bfs, random walks, etc.
