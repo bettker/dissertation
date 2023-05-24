@@ -1,15 +1,33 @@
 % The text in the abstract should not contain more than 500~words
 
 % document language
-\keyword{foo}
+\keyword{Classical Planning}
+\keyword{Heuristic Search}
+\keyword{Learning Heuristic Functions}
+\keyword{Artificial Neural Network}
+\keyword{Sample Generation}
 
 \begin{abstract}
-    bar
+Heuristic functions are essential in guiding search algorithms to solve planning tasks.
+We study the problem of learning good heuristic functions for classical planning tasks with neural networks based on samples that are states with their cost-to-goal estimates. It is well known that the learned model quality depends on the training data quality. Our main goal is to understand better the influence of sample generation strategies on the performance of a greedy best-first search guided by a learned heuristic function.
+In a set of controlled experiments, we find that two main factors determine the quality of the learned heuristic: the regions of the state space included in the samples and the quality of the cost-to-goal estimates. Also, these two factors are interdependent: having perfect estimates of cost-to-goal is insufficient if an unrepresentative part of the state space is included in the sample set. 
+Additionally, we study the effects of restricting samples to only include states that could be visited when solving a given task and the effects of adding samples with high-value estimates.
+Based on our findings, we propose practical strategies to improve the quality of learned heuristics: three strategies that aim to generate more representative states and two strategies that improve the cost-to-goal estimates.
+Our resulting neural network heuristic has higher coverage than a basic satisficing heuristic. Also, compared to a baseline learned heuristic, our best neural network heuristic almost doubles the mean coverage and can increase it for some domains by more than six times.
 \end{abstract}
 
 % other language
-\translatedkeyword{bar}
+\translatedkeyword{Planejamento Clássico}
+\translatedkeyword{Busca Heurística}
+\translatedkeyword{Aprendizado de Funções Heurísticas}
+\translatedkeyword{Rede Neural Artificial}
+\translatedkeyword{Geração de Amostras}
 
 \begin{translatedabstract}
-    foo
+Funções heurísticas são essenciais para guiar algoritmos de busca na resolução de tarefas de planejamento.
+Nós estudamos o problema de aprender boas funções heurísticas para tarefas de planejamento clássico usando redes neurais baseadas em amostras que são estados acompanhados de suas estimativas de custo-para-objetivo. É conhecido que a qualidade do modelo aprendido depende da qualidade dos dados de treinamento. Nosso objetivo principal é entender melhor a influência das estratégias de geração de amostras no desempenho do \emph{greedy best-first search} guiado por uma função heurística aprendida.
+Em um conjunto de experimentos controlados, descobrimos que dois fatores principais determinam a qualidade da heurística aprendida: as regiões do espaço de estados incluídas nas amostras e a qualidade das estimativas de custo-para-objetivo. Além disso, esses dois fatores são interdependentes: ter estimativas perfeitas de custo-para-objetivo é insuficiente se uma parte não representativa do espaço de estados estiver incluída no conjunto de amostras.
+Além disso, estudamos os efeitos de restringir as amostras para incluir apenas estados que poderiam ser visitados ao resolver uma determinada tarefa e os efeitos de adicionar amostras com altos valores de estimativas.
+Com base em nossas descobertas, propomos estratégias práticas para melhorar a qualidade das heurísticas aprendidas: três estratégias que visam gerar estados mais representativos e duas estratégias que melhoram as estimativas de custo-para-objetivo.
+Nossa heurística resultante da rede neural possui uma cobertura maior do que uma heurística de \emph{satisficing} básica. Além disso, em comparação com uma heurística base aprendida, nossa melhor heurística de rede neural quase dobra a cobertura média e aumenta para alguns domínios em mais de seis vezes.
 \end{translatedabstract}
