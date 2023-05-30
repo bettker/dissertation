@@ -15,8 +15,12 @@
 \usepackage[capitalize]{cleveref}
 \usepackage{booktabs}
 \usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily,frame=single}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta}
+
+\newtheorem{definition}{Definition}
 
 \input{definitions}
 
@@ -61,7 +65,7 @@
 \tableofcontents
 
 \input{chapters/1_intro.tex}
-\input{chapters/2_preliminaries.tex}
+\input{chapters/2_background.tex}
 \input{chapters/3_sampling.tex}
 \input{chapters/4_experiments.tex}
 \input{chapters/5_comparison.tex}
