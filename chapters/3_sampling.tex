@@ -101,7 +101,7 @@ We propose the \bfsrw algorithm, which combines the strengths of breadth-first s
 
 \bfs has two phases. In the first phase, a fixed percentage~$p_\bfsrw$ of the desired $N$ samples is generated using BFS. (Note that $p_\bfsrw$ can additionally represent time and memory limitations -- in this case, \bfs stops once either of them is reached first.) The \bfs expands a state from layer~$k$ that generates $n$ states from layer~$k+1$ (line 10). These generated states are sampled only if the current total samples plus $n$ are within $p_{\bfsrw}N$ samples; otherwise, no states are sampled and \bfs expands another state. When expanding an entire layer, the algorithm moves to the next layer.
 
-Let $Q$ be the states of the set of samples that have not been expanded. The second phase generates multiple random walk rollouts, each starting from a state in $Q$ chosen randomly with a complete replacement only after all states have been selected once. This is repeated until reaching $N$ samples in the sample set. During a random walk, states sampled in the BFS phase are discarded. This approach is compared to traditional ones in Chapter~\ref{sec:experiment1-subset}.
+Let $Q$ be the states of the set of samples that have not been expanded. The second phase generates multiple random walk rollouts, each starting from a state in $Q$ chosen randomly with a complete replacement only after all states have been selected once. This is repeated until reaching $N$ samples in the sample set. During a random walk, states sampled in the BFS phase are discarded. This approach is compared to traditional ones in Subsection~\ref{sec:experiment1-subset}.
 
 \subsection{Maximum Regression Limit}
 \label{sec:rollout-depth-limit}
@@ -169,52 +169,44 @@ Therefore, we apply two simple procedures that improve the cost-to-goal estimate
 
 When generating samples through multiple rollouts, there is a possibility of overlap, where the same state could appears at different distances across different rollouts, leading to varying cost-to-goal estimates. This introduces a challenge when training the NN as different labels for the same sample can result in inconsistency and affect the learning process. To address this issue and improve the quality of cost-to-goal estimates, we employ a technique called Sample Improvement (SAI).
 
-SAI aims to improve the consistency and reliability of the training data by selecting a single cost-to-goal estimate for each unique state. Property~\ref{prop:hvalue} guarantees that no sampled cost-to-goal estimate underestimates \hstar, so the smaller its value the closer it is to the true cost-to-goal. Therefore, we choose the sample with the lowest cost-to-goal estimate as the representative for each particular state, as follows.
+SAI aims to improve the consistency and reliability of the training data by selecting a single cost-to-goal estimate for each unique state. \cref{prop:hvalue} guarantees that no sampled cost-to-goal estimate underestimates \hstar, so the smaller its value the closer it is to the true cost-to-goal. Therefore, we choose the sample with the lowest cost-to-goal estimate as the representative for each particular state, as follows.
 
 For all sampled states $s$ we update each cost-to-goal estimate to the best estimate $h(s) = \min\{h_i \mid s=s_i, i\in[N]\}$. Since different partial states can generate identical complete states, the improvement is applied to partial states as well as complete states. Choosing the minimum $h$-value is clearly sound since, in all cases, we have valid plans from a regression that witness these distances; for the same reason, \cref{prop:hvalue} still holds.
 
 \begin{figure}[h]
-    \caption[SAI technique applied on a sample set with random walk rollouts.]{SAI technique applied on a sample set with two random walk rollouts. Each node represents a state and each arc an applicable operator. Each rollout has a color and the operators used in it are colored accordingly. Gray nodes or arcs are not part of the sampling.}
+    \caption[SAI technique applied on a sample set with random walk rollouts.]{SAI technique applied on a sample set with two random walk rollouts. Each node represents a state and each arc an applicable operator. Each rollout has a color and the operators used in it are colored accordingly.}
     \label{fig:sai}
     \addvspace{\baselineskip}
     \centering
     \begin{tikzpicture}[every node/.style={circle, draw}, node distance=23mm, minimum size=9mm]
-        \node (goal) {$s^*$};
-        \node[above right of=goal] (s1) {$s_1$};
-        \node[right of=goal] (s2) {$s_2$};
-        \node[below right of=goal] (s3) {$s_3$};
-        \node[right of=s1] (s4) {$s_4$};
-        \node[right of=s2] (s5) {$s_5$};
-        \node[right of=s3] (s6) {$s_6$};
-        \node[right of=s4] (s7) {$s_7$};
-        \node[right of=s5] (s8) {$s_8$};
-        \node[right of=s6] (s9) {$s_9$};
-        \node[right of=s7] (s10) {$s_{10}$};
-        \node[right of=s8] (s11) {$s_{11}$};
-        \node[right of=s9] (s12) {$s_{12}$};
+        \node[color=black!75] (goal) {$s^*$};
+        \node[above right of=goal, color=black!75] (s1) {$s_1$};
+        \node[right of=goal, color=black!75] (s2) {$s_2$};
+        \node[below right of=goal, color=black!75] (s3) {$s_3$};
+        \node[right of=s1, color=black!75] (s4) {$s_4$};
+        \node[right of=s2, color=black!75] (s5) {$s_5$};
+        \node[right of=s3, color=black!75] (s6) {$s_6$};
+        \node[right of=s4, color=black!75] (s7) {$s_7$};
+        \node[right of=s5, color=black!75] (s8) {$s_8$};
+        \node[right of=s6, color=black!75] (s9) {$s_9$};
+        \node[right of=s9, color=black!75] (s10) {$s_{10}$};
 
-        \draw[->] (s1) -- (s2);
-        \draw[->] (s2) -- (goal);
-        \draw[->] (s3) -- (goal);
-        \draw[->] (s6) -- (s2);
-        \draw[->] (s6) -- (s3);
-        \draw[->] (s4) -- (s1);
-        \draw[->] (s4) -- (s2);
-        \draw[->] (s5) -- (s4);
-        \draw[->] (s9) -- (s5);
-        \draw[->] (s9) -- (s6);
-        \draw[->] (s7) -- (s4);
-        \draw[->] (s8) -- (s9);
-        \draw[->] (s8) -- (s12);
-        \draw[->] (s11) -- (s12);
-        \draw[->] (s10) -- (s8);
-        \draw[->] (s10) -- (s7);
-        \draw[->] (s10) -- (s11);
-        \draw[->] (s12) -- (s9);
+        \draw[->, color=red!50] (s1) -- (s2);
+        \draw[->, color=red!50] (s2) -- (goal);
+        \draw[->, color=blue!50] (s2) -- (s6);
+        \draw[->, color=blue!50] (s3) -- (goal);
+        \draw[->, color=red!50] (s4) -- (s1);
+        \draw[->, color=blue!50] (s5) -- (s2);
+        \draw[->, color=blue!50] (s6) -- (s3);
+        \draw[->, color=red!50] (s7) -- (s4);
+        \draw[->, color=red!50] (s8) -- (s7);
+        \draw[->, color=blue!50] (s8) -- (s10);
+        \draw[->, color=blue!50] (s9) -- (s5);
+        \draw[->, color=blue!50] (s10) -- (s9);
       \end{tikzpicture}
 \end{figure}
 
-Figure~\ref{fig:sai} presents the technique applied to sampling by random walks. Both rollouts generate the state $s_4$, but through different paths. While the blue rollout reaches with a distance of $2$ from the goal state $s^*$, the red rollout generates $s_4$ after $4$ hops. Consequently, samples have $h(s_4)=2$ and $h(s_4)=4$. By applying the SAI technique, we update the cost-to-goal estimate $h(s_4)$ of both samples to $min(4,2)=2$. The same process is applied to samples of state $s8$, which receives $h(s_8)=min(1,2)=1$.
+Figure~\ref{fig:sai} presents the technique applied to sampling by random walks. Both rollouts generate the state $s_2$, but through different paths. While the red rollout reaches with a distance of $1$ from the goal state $s^*$, the blue rollout generates $s_2$ after $3$ hops. Consequently, samples have $h(s_2)=1$ and $h(s_2)=3$. By applying the SAI technique, we update the cost-to-goal estimate $h(s_2)$ of both samples to $min(1,3)=1$. The same process is applied to samples of state $s8$, which receives $h(s_8)=min(5,7)=5$.
 
 \subsection{Improvement over Successors}
 \label{sec:hvfc}
@@ -279,47 +271,38 @@ By applying operators on partial states to identify neighboring states from diff
 The second loop (line 10) propagates the value of the cost-to-goal estimate through all possible paths, updating the value of the neighbors (which in the next iteration can update the estimate of their own neighbors and so on). For partial states generated by regression, by construction, at least one successor exists, except for the goal state $s^*$. Therefore, in the worst case, the algorithm will make $L$ iterations, propagating the cost-to-goal estimate of the goal state to the most distant node, working similarly to Dijkstra's Algorithm. As for \hmin, all distances are witnessed by plans, so \cref{prop:hvalue} is maintained.
 
 \begin{figure}[h]
-    \caption[SUI technique applied on a sample set with random walk rollouts.]{SUI technique applied on a sample set with two random walk rollouts. Each node represents a state and each arc an applicable operator. Each rollout has a color and the operators used in it are colored accordingly. Gray nodes or arcs are not part of the sampling.}
+    \caption[SUI technique applied on a sample set with random walk rollouts.]{SUI technique applied on a sample set with two random walk rollouts. Each node represents a state and each arc an applicable operator. Each rollout has a color and the operators used in it are colored accordingly.}
     \label{fig:sui}
     \addvspace{\baselineskip}
     \centering
     \begin{tikzpicture}[every node/.style={circle, draw}, node distance=23mm, minimum size=9mm]
-        \node (goal) {$s^*$};
-        \node[above right of=goal] (s1) {$s_1$};
-        \node[right of=goal] (s2) {$s_2$};
-        \node[below right of=goal] (s3) {$s_3$};
-        \node[right of=s1] (s4) {$s_4$};
-        \node[right of=s2] (s5) {$s_5$};
-        \node[right of=s3] (s6) {$s_6$};
-        \node[right of=s4] (s7) {$s_7$};
-        \node[right of=s5] (s8) {$s_8$};
-        \node[right of=s6] (s9) {$s_9$};
-        \node[right of=s7] (s10) {$s_{10}$};
-        \node[right of=s8] (s11) {$s_{11}$};
-        \node[right of=s9] (s12) {$s_{12}$};
+        \node[color=black!75] (goal) {$s^*$};
+        \node[right of=goal, color=black!75] (s1) {$s_1$};
+        \node[below right of=goal, color=black!75] (s2) {$s_2$};
+        \node[above right of=s1, color=black!75] (s3) {$s_3$};
+        \node[right of=s1, color=black!75] (s4) {$s_4$};
+        \node[right of=s2, color=black!75] (s5) {$s_5$};
+        \node[right of=s3, color=black!75] (s6) {$s_6$};
+        \node[right of=s4, color=black!75] (s7) {$s_7$};
+        \node[right of=s5, color=black!75] (s8) {$s_8$};
+        \node[right of=s6, color=black!75] (s9) {$s_9$};
 
-        \draw[->] (s1) -- (s2);
-        \draw[->] (s2) -- (goal);
-        \draw[->] (s3) -- (goal);
-        \draw[->] (s6) -- (s2);
-        \draw[->] (s6) -- (s3);
-        \draw[->] (s4) -- (s1);
-        \draw[->] (s4) -- (s2);
-        \draw[->] (s5) -- (s4);
-        \draw[->] (s9) -- (s5);
-        \draw[->] (s9) -- (s6);
-        \draw[->] (s7) -- (s4);
-        \draw[->] (s8) -- (s9);
-        \draw[->] (s8) -- (s12);
-        \draw[->] (s11) -- (s12);
-        \draw[->] (s10) -- (s8);
-        \draw[->] (s10) -- (s7);
-        \draw[->] (s10) -- (s11);
-        \draw[->] (s12) -- (s9);
+        \draw[->, color=red!50] (s1) -- (goal);
+        \draw[->, color=blue!50] (s2) -- (goal);
+        \draw[->, color=red!50] (s3) -- (s1);
+        \draw[->, color=black!60] (s4) -- (s1);
+        \draw[->, color=blue!50] (s4) -- (s8);
+        \draw[->, color=blue!50] (s5) -- (s2);
+        \draw[->, color=red!50] (s6) -- (s3);
+        \draw[->, color=blue!50] (s7) -- (s4);
+        \draw[->, color=black!60] (s7) -- (s8);
+        \draw[->, color=blue!50] (s8) -- (s5);
+        \draw[->, color=black!70] (s9) -- (s6);
+        \draw[->, color=blue!50] (s9) -- (s7);
       \end{tikzpicture}
 \end{figure}
 
-Figure~\ref{fig:sui} shows an example of the technique. The rollouts do not overlap but intersect at a distance of one operator between states X and Y. This information is discovered by inserting the black arcs to the graph~$G$, which were not previously used by the sampling. From there, we can connect X and Y to generate a new path from Y to goal that is shorter than its current one, updating the cost-to-goal estimate from A to B, according to the new path. Now, Y can update the estimate of its neighbors in the next iteration. Thus, all states generated in the rollout after Y will be updated. Therefore, although the neighborhood between states is more common close to the goal state, distant states benefit from the propagation of update.
+Figure~\ref{fig:sui} shows an example of the technique. The rollouts do not overlap but intersect at a distance of one operator between states $s_1$ and $s_4$. This information is discovered by inserting the black arcs to the graph~$G$, which were not previously used by the sampling. From there, we can connect these states to generate a new path from $s_4$ to goal that is shorter than its current one, updating its cost-to-goal estimate from $4$ to $h(s_1)+1=1+1=2$, according to the new path. Now, $s_4$ can update the estimate of its neighbors in the next iteration. Thus, all states generated in the rollout after $s_4$ will be updated. Therefore, although the neighborhood between states is more common close to the goal state, distant states benefit from the propagation of update.
 
 \section{Workflow}
 \label{sec:workflow}
@@ -428,11 +411,11 @@ An example of all techniques can be extracted from Figure~\ref{fig:example}. The
             \factontable{R}};
 
         % s3 -> s4
-        \draw[->] (9.4,1.1) to [bend right=20] (8.5,0.4);
+        \draw[->] (9.5,1.1) to [bend right=20] (8.5,0.4);
         \node[align=center] at (10.4,0.3) {($s_4$)};
-        \drawCube{10}{1}{0}{blue}{0.5}
-        \drawCube{10.5}{1}{0}{red}{0.5}
-        \drawCube{11}{1}{0}{green}{0.5}
+        \drawCube{10.1}{1}{0}{blue}{0.5}
+        \drawCube{10.6}{1}{0}{red}{0.5}
+        \drawCube{11.1}{1}{0}{green}{0.5}
         \node[align=center] at (13,1.3) {\factclear{R} \\
             \factclear{G} \\
             \factclear{B} \\
