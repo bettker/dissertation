@@ -1,7 +1,9 @@
 \begin{table}[ht]
+\caption[Mean difference of heuristics to \hstar when evaluated over the \fssp.]{Mean difference of \hff, \hgc and \hnn, to \hstar when evaluated over the \fssp.}
+\label{tab:small-strategies-sp-error}
+\addvspace{\baselineskip}
 \centering
 \begin{tabular}{lrrrrrrr}
-\toprule
 Domain & \hff & \hgc & \hnnbase & \hnnbfsrwl{\default} & \hnnbfsrwl{\facts} & \hnnbfsrwl{\meanfx} & \hnnrs \\
 \midrule
 Blocks       & 6.76 & 13.37 &  26.46  & 16.58 & 9.84  & 2.91 & \textbf{2.42} \\
@@ -12,8 +14,5 @@ Scanalyzer   & 2.78 & \textbf{1.08}  &  106.37 & 27.60 & 11.45 & 2.99 & 9.01   \
 Transport    & \textbf{1.13} & 8.63  &  109.77 & 33.53 & 12.54 & 7.05 & 14.89   \\
 VisitAll     & \textbf{1.31} & 3.03  &  21.55  & 7.50  & 5.56  & 2.21 & 4.74   \\ \midrule
 Geo. mean    & 1.84 & 5.92  &  39.80  & 13.91 & 8.13  & 3.57 & 7.40     \\
-\bottomrule
-\end{tabular}%
-\caption{Mean difference of \hff, \hgc and \hnn, to \hstar when evaluated over the \fssp.}
-\label{tab:small-strategies-sp-error}
+\end{tabular}
 \end{table}

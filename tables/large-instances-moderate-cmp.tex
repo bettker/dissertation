@@ -1,24 +1,24 @@
 \begin{table}[ht]
+\caption[Mean coverages and expanded states of the logic-based heuristics, baseline learned heuristic and our best learned heuristic.]{Mean coverages and expanded states of the logic-based heuristics \hff and \hgc compared to the baseline learned heuristic \hnnbase and the best learned heuristic \hnnrs, obtained via training over samples with \bfsrw, \meanfx, $20$\,\% of random samples, and all $h$-value improvement strategies. Expanded states consider only the initial states solved by all heuristics; N-Puzzle and Storage had no common solved initial state. Geometric mean is used for the overall mean of expanded states.}
+\label{tab:large-instances-moderate-cmp}
+\addvspace{\baselineskip}
 \centering
 \begin{tabular}{lrrrrrrrr}
-    \toprule & \multicolumn{4}{c}{Coverage (\%)} & \multicolumn{4}{c}{Expanded states} \\
-    \cmidrule(lr){2-5} \cmidrule(lr){6-9}
-    Domain & \hff & \hgc & \hnnbase & \hnnrs & \hff & \hgc & \hnnbase & \hnnrs \\
-    \midrule
-    Blocks & \textbf{100.00} & \textbf{100.00} & \textbf{100.00} & \textbf{100.00} & 36482 & 87026 & \textbf{5349} & 7335 \\
-    Depot & \textbf{94.33} & 80.00 & 57.19 & 89.26 & 137053 & 874333 & 35972 & \textbf{29984} \\
-    Grid & \textbf{94.00} & 51.00 & 38.11 & 60.33 & 45117 & 29990 & \textbf{15040} & 27009 \\
-    N-Puzzle & \textbf{92.50} & 4.00 & 13.75 & 86.81 & - & - & - & - \\
-    Pipes-NT & 63.40 & 89.40 & 13.51 & \textbf{79.84} & 83825 & \textbf{10416} & 304764 & 17389 \\
-    Rovers & \textbf{85.50} & 66.00 & 13.53 & 15.39 & 38 & 466 & 596 & \textbf{30} \\
-    Scanalyzer & \textbf{100.00} & \textbf{100.00} & 59.70 & 73.67 & 408 & 3914 & 27570 & \textbf{300} \\
-    Storage & \textbf{33.00} & 13.50 & 1.94 & 27.67 & - & - & - & - \\
-    Transport & \textbf{100.00} & \textbf{100.00} & 48.89 & \textbf{100.00} & \textbf{8342} & 253501 & 139311 & 12149 \\
-    VisitAll & 92.00 & \textbf{100.00} & 74.19 & 98.85 & 248269 & \textbf{337} & 80155 & 5110 \\
-    \midrule
-    Mean & 85.47 & 70.39 & 42.08 & 73.18 & 12529 & 15706 & 25184 & 3937 \\
-    \bottomrule
+& \multicolumn{4}{c}{Coverage (\%)} & \multicolumn{4}{c}{Expanded states} \\
+\cmidrule(lr){2-5} \cmidrule(lr){6-9}
+Domain & \hff & \hgc & \hnnbase & \hnnrs & \hff & \hgc & \hnnbase & \hnnrs \\
+\midrule
+Blocks & \textbf{100.00} & \textbf{100.00} & \textbf{100.00} & \textbf{100.00} & 36482 & 87026 & \textbf{5349} & 7335 \\
+Depot & \textbf{94.33} & 80.00 & 57.19 & 89.26 & 137053 & 874333 & 35972 & \textbf{29984} \\
+Grid & \textbf{94.00} & 51.00 & 38.11 & 60.33 & 45117 & 29990 & \textbf{15040} & 27009 \\
+N-Puzzle & \textbf{92.50} & 4.00 & 13.75 & 86.81 & - & - & - & - \\
+Pipes-NT & 63.40 & 89.40 & 13.51 & \textbf{79.84} & 83825 & \textbf{10416} & 304764 & 17389 \\
+Rovers & \textbf{85.50} & 66.00 & 13.53 & 15.39 & 38 & 466 & 596 & \textbf{30} \\
+Scanalyzer & \textbf{100.00} & \textbf{100.00} & 59.70 & 73.67 & 408 & 3914 & 27570 & \textbf{300} \\
+Storage & \textbf{33.00} & 13.50 & 1.94 & 27.67 & - & - & - & - \\
+Transport & \textbf{100.00} & \textbf{100.00} & 48.89 & \textbf{100.00} & \textbf{8342} & 253501 & 139311 & 12149 \\
+VisitAll & 92.00 & \textbf{100.00} & 74.19 & 98.85 & 248269 & \textbf{337} & 80155 & 5110 \\
+\midrule
+Mean & 85.47 & 70.39 & 42.08 & 73.18 & 12529 & 15706 & 25184 & 3937 \\
 \end{tabular}
-\caption{Mean coverages and expanded states of the logic-based heuristics \hff and \hgc compared to the baseline learned heuristic \hnnbase and the best learned heuristic \hnnrs, obtained via training over samples with \bfsrw, \meanfx, $20$\,\% of random samples, and all $h$-value improvement strategies. Expanded states consider only the initial states solved by all heuristics; N-Puzzle and Storage had no common solved initial state. Geometric mean is used for the overall mean of expanded states.}
-\label{tab:large-instances-moderate-cmp}
 \end{table}
