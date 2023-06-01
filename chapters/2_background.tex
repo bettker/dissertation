@@ -1,7 +1,7 @@
 \chapter{Background}
 \label{sec:preliminaries}
 
-This chapter provides an overview of the fundamental concepts and techniques that establish the background for this dissertation. In Section~\ref{sec:background_classicalplanning}, we introduce classical planning and its notation, and present the propositional representation (Section~\ref{sec:background_strips}) used for modeling planning tasks, as well as the \sas representation (Section~\ref{sec:background_sas}), which allows for more expressive problem formulations. We introduce heuristic search in Section~\ref{sec:background_heuristicsearch}, an approach that utilizes heuristic functions to guide the search to solve planning tasks. The chapter also discusses heuristic functions in Section~\ref{sec:background_heuristicfunctions}. Additionally, Section~\ref{sec:background_serchalgorithms} provides a detailed explanation of common search algorithms used in sample generation. Neural networks, trained to learn heuristic functions, are discussed in Section~\ref{sec:background_neuralnetworks}, and our specific architecture model is presented in Section~\ref{sec:background_resnets}. Finally, the chapter reviews related work (Section~\ref{sec:background_relatedwork}), discussing previous approaches and techniques that have contributed to sample generation and learning of heuristic function.
+This chapter provides an overview of the fundamental concepts and techniques that form the background for this dissertation. In Section~\ref{sec:background_classicalplanning}, we introduce classical planning and its notation, including the propositional representation (Section~\ref{sec:background_strips}) commonly used for modeling planning tasks, as well as the more expressive \sas representation (Section~\ref{sec:background_sas}). Section~\ref{sec:background_searchalgorithms} focuses on search algorithms used in sampling generation and problem solving. Specifically, it discusses blind search in Section~\ref{sec:background_blindsearch} and heuristic search algorithms in Section~\ref{sec:background_heuristicsearch}. Furthermore, neural networks used to learn heuristic functions are discussed in Section~\ref{sec:background_neuralnetworks}, and our specific architecture model is presented in Section~\ref{sec:background_resnets}. Finally, we review related work (Section~\ref{sec:background_relatedwork}), discussing previous approaches and techniques that have contributed to sample generation and learning of heuristic function.
 
 \section{Classical Planning}
 \label{sec:background_classicalplanning}
@@ -40,20 +40,14 @@ An operator $o$ is applicable to a state $s$ if $\pre(o) \subseteq s$, and produ
 
 A sequential application of operators is called a progression. Alternatively, a regression is a backward sequential application of operators. For regression, we consider an operator $o$ to be relevant for partial state~$s$ if $\eff_r=\dom(\eff(o))\cap\dom(s)\neq\emptyset$; the operator is consistent if $\eff(o)|_{\eff_r} \subseteq s$. Relevance requires at least one defined effect in the partial state to be regressed, consistency and an agreement on defined effects. An operator~$o$ then is \define{backward} applicable in partial state~$s$ if it is relevant and consistent with~$s$ and leads to predecessor $r=\pre(o)\circ (s|_{\dom(s)\setminus\eff_r})$. Note that $\sucs(r,o)\subseteq s$, but may differ from $s$. Similar to progression, a partial state~$s$ has predecessors $\pred(s)=\{\pred(s,o)\mid o\in \mathcal{O}, \text{o backward applicable to }s\}$. A regression sequence from state $s_0$ then is valid if $o_i$ can be applied to $s_{i-1}$ and produces $s_i=\pred(s_{i-1},o_i)$. All partial states~$s_k$ can reach a partial state $s\subseteq s_0$ in at most~$k$ forward applications of the reversed operator sequence.
 
-\begin{definition}[Planning Task]\label{def:planningtask}
-    A~\sas planning task is a tuple $\Pi=\langle\mathcal{V},\mathcal{O},s_0,s^*, \text{cost}\rangle$, where $\mathcal{V}$~is a set of variables, $\mathcal{O}$~is a set of operators, $s_0$~an initial state, $s^*$ a goal condition, and $\text{cost}:\mathcal{O}\rightarrow\R_{+}$ a function mapping operators to costs.
-\end{definition}
-
-The following sections cover the main formalisms for representing planning tasks.
-
 \begin{definition}[Plan]\label{def:plan}
-    A plan is a sequence of operators $\pi=(o_1,\ldots,o_k)$, $o_i\in \mathcal{O}$ with $o_i \in \mathcal{O}$.
+    A plan is a sequence of operators $\pi=(o_1,\ldots,o_k)$, $o_i\in \mathcal{O}$ where $\mathcal{O}$ is the set of operators of a task.
 \end{definition}
 
 A plan is valid for state~$s_0$ ($s_0$-plan), if for $i\in[k]$ operator~$o_i$ can be applied to $s_{i-1}$ and produces $s_i=\sucs(s_{i-1},o_i)$, where $s_k \in s^*$. The cost of plan~$\pi$ is $\sum_{i\in[k]} \text{cost}(o_i)$. When a plan has the lowest cost among all $s_0$-plans it is called an optimal plan.
 
 \begin{definition}[State Space]\label{def:statespace}
-    A state space is the set of all states over $\mathcal{V}$.
+    A state space is the set of all states over the variables $\mathcal{V}$ of a task.
 \end{definition}
 
 The forward state space (\fssp) is the set of all states reachable from the initial state~$s_0$ by applying a sequence of operators. Similarly, the backward state space (\bssp) is the set of all partial states reachable from the goal~$s^*$ by applying a sequence of backward applicable operators.
@@ -61,7 +55,11 @@ The forward state space (\fssp) is the set of all states reachable from the init
 \subsection{Propositional Representation}
 \label{sec:background_strips}
 
-Propositional representation is a fundamental approach used in planning tasks to model and reason about the state of the environment. In this representation, a planning task is defined by a set of propositional variables (facts) that describe the various attributes and conditions of the problem domain. Each predicate represents a specific property that can be true or false in a given state. Additionally there is the set of operators, also known as actions, that can be applied to transition between states. The operators are expressed using the predicates. 
+Propositional representation is a fundamental approach used in planning tasks to model and reason about the state of the environment. In this representation, a planning task is defined by a set of propositional variables (facts) that describe the various attributes and conditions of the problem domain. Each predicate represents a specific property that can be true or false in a given state. Additionally there is the set of operators, also known as actions, that can be applied to transition between states. The operators are expressed using the predicates.
+
+\begin{definition}[Propositional Planning Task]\label{def:sasplanningtask}
+    A propositional planning task is a tuple~$\Pi=\langle\mathcal{V},\mathcal{O},s_0,s^*, \text{cost}\rangle$, where $\mathcal{V}$~is a set of propositions, $\mathcal{O}$~is a set of operators over $\mathcal{V}$, $s_0$~an initial state, $s^*$ a goal condition, and $\text{cost}:\mathcal{O}\rightarrow\R_{+}$ a function mapping operators to costs.
+\end{definition}
 
 The propositional representation, with its predicates and actions, forms the basis for the STRIPS (Stanford Research Institute Problem Solver) representation~\cite{Fikes.Nilsson/1971}, one of the most widely used models for planning tasks. STRIPS extends the propositional representation by introducing formalized syntax and semantics for representing preconditions and effects of operators, enabling automated planning algorithms to reason about the state transitions and generate plans.
 
@@ -106,15 +104,21 @@ Figure~\ref{fig:pddl} shows an example of a domain description in PDDL. The Visi
 
 Another approach to modeling planning tasks is through the use of the \sas representation~\cite{Backstrom.Nebel/1995}. Although Fast~Downward takes propositional representation with PDDL as its input, internally it utilizes finite domains to represent states. The \sas representation enhances the capabilities of the propositional representation by employing finite domains $D$, which explicitly define the possible values for each variable. This enables a more compact and structured representation of the problem.
 
+\begin{definition}[\sas Planning Task]\label{def:sasplanningtask}
+    A~\sas planning task is defined as a tuple~$\Pi=\langle\mathcal{V},\mathcal{O},s_0,s^*, \text{cost}\rangle$, where $\mathcal{V}$~is a set of variables, $\mathcal{O}$~is a set of operators over $\mathcal{V}$, $s_0$~an initial state, $s^*$ a goal condition, and $\text{cost}:\mathcal{O}\rightarrow\R_{+}$ a function mapping operators to costs.
+\end{definition}
 
-Essentially, both \sas and STRIPS differs in its method to representing states and can be converted between each other. As an example, consider the VisitAll domain depicted in Figure~\ref{fig:pddl}, specifically the at-robot predicate. In PDDL, the action always replaces one robot position with another. Thus, \sas represents this predicate using a variable $V$ and a value $v \in D(V)$ for each possible robot position. Consequently, in large grids with hundreds of positions where propositional representation would require numerous facts, \sas efficiently represents them using just a single variable.
+Essentially, both \sas and STRIPS differs in its method to representing states and can be converted between each other. As an example, consider the VisitAll domain depicted in Figure~\ref{fig:pddl}, specifically the at-robot predicate. In PDDL, the action always replaces one robot position with another. Thus, \sas represents this predicate using a variable $V$ and a value $v \in D(V)$ for each possible robot position. Consequently, in large grids with hundreds of positions where propositional representation would require numerous facts, \sas efficiently represents them using a single variable.
 
-\section{Blind Search}
-\label{sec:background_serchalgorithms}
+\section{Search Algorithms}
+\label{sec:background_searchalgorithms}
 
-Search algorithms enables the exploration of the search space to find a solution for a planning task. These algorithms systematically traverse the state space of a problem, aiming to reach a goal state from an initial state. Blind search algorithms, in particular, operate without any prior knowledge about the problem domain and rely solely on the problem representation to guide the search process. By exploring the search space exhaustively, blind search algorithms diligently navigate through various states and paths to uncover potential solutions.
+Search algorithms enables the exploration of the search space to find a solution for a planning task. These algorithms systematically traverse the state space of a problem, aiming to reach a goal state from an initial state. Blind search algorithms, in particular, operate without any prior knowledge about the problem domain and rely solely on the problem representation to guide the search process. Heuristic search, on the other hand, incorporates problem-specific knowledge to guide the search process. It uses heuristics, which are approximate or informed estimates of the cost or distance to the goal, to prioritize the exploration of more promising paths. The following sections present both approaches.
 
-One example of a blind search algorithm is the Breadth-First Search (BFS). BFS explores the search space by systematically expanding all the states at the current depth level before moving to the next depth level. This strategy ensures that the shortest path to a goal state is found. However, BFS can be memory-intensive as it needs to store all the generated states in memory.
+\subsection{Blind Search}
+\label{sec:background_blindsearch}
+
+By exploring the search space exhaustively, blind search algorithms diligently navigate through various states and paths to uncover potential solutions. An example of a blind search algorithm is the Breadth-First Search (BFS). BFS explores the search space by systematically expanding all the states at the current depth level before moving to the next depth level. This strategy ensures that the shortest path to a goal state is found. However, BFS can be memory-intensive as it needs to store all the generated states in memory.
 
 Depth-First Search (DFS) also performs a blind search. In DFS, the search process starts from an initial state and explores the search space by iteratively expanding the deepest unexplored state. This algorithm is memory-efficient as it only needs to keep track of a single path from the initial state to the current state. However, DFS does not guarantee an optimal solution and can get trapped in deep branches of the search tree.
 
@@ -160,19 +164,17 @@ To exemplify, Figure~\ref{fig:statespace} presents a state space. BFS starts by 
 
 Blind search algorithms are not suitable for solving planning tasks due to their inherent limitations in efficiently exploring the search space, and instead, heuristic search is employed, which will be introduced in the next section. However, BFS and DFS can still be valuable as sampling algorithms in planning. By sampling the search space using these algorithms, we can selectively focus on regions that are either closer to the initial state, using BFS, or more distant, using DFS.
 
-\section{Heuristic Search}
+\subsection{Heuristic Search}
 \label{sec:background_heuristicsearch}
 
 Exploring a large portion of the search space to finding a plan can quickly become computationally infeasible, especially for complex planning domains with large state spaces. Therefore, the primary technique for solving planning tasks is heuristic search. Heuristic search algorithms address this challenge by utilizing heuristics, which are approximate measures of distance or cost, to guide the search towards promising regions of the search space. These heuristics estimate how close a given state is to the goal state and provide guidance on which actions to prioritize during the search.
 
-A commonly used heuristic search algorithm in classical planning is \astar search. \astar combines the cost of reaching a state from the initial state ($g$-value) with a heuristic estimate of the remaining cost to reach the goal state ($h$-value). The heuristic estimate is also known as the cost-to-goal estimate. By considering both the past cost and the estimated future cost, \astar can efficiently explore the search space and find a solution.
+A commonly used heuristic search algorithm in classical planning is \astar search. \astar combines the cost of reaching a state from the initial state ($g$-value) with a heuristic estimate of the remaining cost to reach the goal state ($h$-value). By considering both the past cost and the estimated future cost, \astar can efficiently explore the search space and find a solution. Greedy Best-First Search (GBFS), another widely used heuristic search algorithm in classical planning, is a variant of \astar search that prioritizes expanding states with the lowest heuristic values, without considering the past cost of reaching those states. GBFS is considered a ``greedy'' algorithm because it only takes into account the heuristic estimate and makes decisions solely based on that information. While GBFS can be extremely efficient in terms of exploration speed, it does not guarantee finding an optimal solution. The lack of considering the past cost can lead to suboptimal solutions or even failure to find a solution in some cases. Nonetheless, GBFS remains a popular choice in planning tasks where finding any feasible solution quickly is more important than finding the optimal solution. Therefore, for our experiments, GBFS will serve as the search algorithm.
 
-Greedy Best-First Search (GBFS) is another widely used heuristic search algorithm in classical planning. It is a variant of \astar search that prioritizes expanding states with the lowest heuristic values, without considering the past cost of reaching those states. GBFS is considered a ``greedy'' algorithm because it only takes into account the heuristic estimate and makes decisions solely based on that information. While GBFS can be extremely efficient in terms of exploration speed, it does not guarantee finding an optimal solution. The lack of considering the past cost can lead to suboptimal solutions or even failure to find a solution in some cases. Nonetheless, GBFS remains a popular choice in planning tasks where finding any feasible solution quickly is more important than finding the optimal solution. Therefore, for our experiments, GBFS will serve as the search algorithm.
+% \subsubsection{Heuristic Functions}
+% \label{sec:background_heuristicfunctions}
 
-\subsection{Heuristic Functions}
-\label{sec:background_heuristicfunctions}
-
-The effectiveness of heuristic search relies heavily on the quality of the heuristic function used. A heuristic function~$h:\mathcal{S}\rightarrow\R_{+}\cup\{\infty\}$ maps each state in the state space~$\mathcal{S}$ to a non-negative number or infinity. The number represents the cost-to-goal estimate ($h$-value) for the given state. An infinity value indicates that the state is a dead-end, i.e., it does not have any path to the goal. A heuristic function is more efficient when its $h$-value closely approximate the true goal distance. The optimal heuristic function \hstar consistently produces the cost of an optimal plan for all state~$s \in \mathcal{S}$.
+Both GBFS and \astar search algorithms require the use of a heuristic function. A heuristic function~$h:\mathcal{S}\rightarrow\R_{+}\cup\{\infty\}$ maps each state in the state space~$\mathcal{S}$ to a non-negative number or infinity. The number represents the cost-to-goal estimate ($h$-value) for the given state. An infinity value indicates that the state is a dead-end, i.e., it does not have any path to the goal. A heuristic function is more efficient when its $h$-value closely approximate the true goal distance. The optimal heuristic function \hstar consistently produces the cost of an optimal plan for all state~$s \in \mathcal{S}$.
 
 Heuristic function possesses certain properties such as admissibility and consistency. Admissibility refers to the characteristic of a heuristic function that never overestimates the true goal distance. An admissible heuristic ensures that the search algorithm explores the most promising paths and guarantees optimality when combined with certain search algorithms such as \astar. Still, a heuristic function is consistent if the estimated cost of a state is always less than or equal to the sum of the estimated cost to reach a successor plus the cost of the action.
 
