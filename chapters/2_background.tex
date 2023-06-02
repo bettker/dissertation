@@ -1,7 +1,7 @@
 \chapter{Background}
 \label{sec:preliminaries}
 
-This chapter provides an overview of the fundamental concepts and techniques that form the background for this dissertation. In Section~\ref{sec:background_classicalplanning}, we introduce classical planning and its notation, including the propositional representation (Section~\ref{sec:background_strips}) commonly used for modeling planning tasks, as well as the more expressive \sas representation (Section~\ref{sec:background_sas}). Section~\ref{sec:background_searchalgorithms} focuses on search algorithms used in sampling generation and problem solving. Specifically, it discusses blind search in Section~\ref{sec:background_blindsearch} and heuristic search algorithms in Section~\ref{sec:background_heuristicsearch}. Furthermore, neural networks used to learn heuristic functions are discussed in Section~\ref{sec:background_neuralnetworks}, and our specific architecture model is presented in Section~\ref{sec:background_resnets}. Finally, we review related work (Section~\ref{sec:background_relatedwork}), discussing previous approaches and techniques that have contributed to sample generation and learning of heuristic function.
+This chapter provides an overview of the fundamental concepts and techniques that form the background for this dissertation. We introduce classical planning and its notation, including the planning formalisms, in Section~\ref{sec:background_classicalplanning}. Search algorithms used in sampling generation and heuristic search are presented in Section~\ref{sec:background_searchalgorithms}. Additionally, in Section~\ref{sec:background_neuralnetworks}, we delve into the use of neural networks for learning heuristic functions. Finally, we review related work in Section~\ref{sec:background_relatedwork}, discussing previous approaches and techniques that have contributed to sample generation and learning of heuristic function.
 
 \section{Classical Planning}
 \label{sec:background_classicalplanning}
@@ -9,28 +9,28 @@ This chapter provides an overview of the fundamental concepts and techniques tha
 To find a solution from search algorithms, it is necessary to provide a formal description of the problem. In classical planning, a problem is represented as a planning task. We define the various concepts that constitute a planning task, which are addressed throughout the dissertation.
 
 \begin{definition}[Variable]\label{def:variable}
-    A variable $V$ has a finite domain $D(V)$ and is defined as a single value $v \in D(V)$.
+    A variable $V$ has a finite domain $D(V)$ and is defined as a single value~$v \in D(V)$.
 \end{definition}
 
-The variables define the current state of the environment. For example, consider a domain with a robot that navigates on a grid. One variable, $V_{at}$, represents the robot's position, where each value $v \in D(V_{at})$ corresponds to a location on the grid. Typically a domain has several variables.
+The variables define the current state of the environment. For example, consider a domain with a robot that navigates on a grid. A variable, $V_{at}$, represents the robot's position, where each value~$v \in D(V_{at})$ corresponds to a location on the grid. Typically a domain has several variables.
 
 \begin{definition}[Fact]\label{def:fact}
-    An fact $f$ is an assignemnt of a value $v \in D(V)$ to a variable $V$.
+    An fact $f$ is an assignemnt of a value~$v \in D(V)$ to a variable $V$.
 \end{definition}
 
-Each variable generates $|D(V)|$ facts. When considering the previous example in a $2 \times 2$ grid with 4 tiles labeled $t_0$ to $t_3$, the variable $V_{at}$ has the set of facts $F_{at}=\{\text{at}(t_0),\ldots,\text{at}(t_3)\}$.
+Each variable generates $|D(V)|$~facts. When considering the previous example in a $2 \times 2$ grid with 4 tiles labeled $t_0$ to $t_3$, the variable~$V_{at}$ has the set of facts~$F_{at}=\{\text{at}(t_0),\text{at}(t_1),\text{at}(t_2),\text{at}(t_3)\}$.
 
 \begin{definition}[Mutex]\label{def:mutex}
     A mutex (mutual exclusion) is a condition where two or more facts can not occur simultaneously.
 \end{definition}
 
-In the example domain, the robot cannot be in two positions simultaneously. Hence, any two facts from the set $F_{at}$ represent a mutex. By definition, a variable assumes a single value $v \in D(V)$, and therefore, the variable combines facts that are mutexes. However, mutex conditions can also arise between values of different variables.
+In the example domain, the robot cannot be in two positions simultaneously. Hence, any two facts from the set~$F_{at}$ represent a mutex. By definition, a variable assumes a single value~$v \in D(V)$, and therefore, the variable combines facts that are mutexes. However, mutex conditions can also arise between values of different variables.
 
 \begin{definition}[State]\label{def:state}
     A state $s$ is an assignment of all variables $V \in \mathcal{V}$ where $\mathcal{V}$ is the set of variables of a task.
 \end{definition}
 
-A state in which all variables are defined is also called a complete state. When the set of variables is not fully assigned, i.e., one or more variables $V \in \mathcal{V}$ do not have a defined value $v \in D(V)$, it is a partial state. Let $s(V)$ be the value of variable $V$ in state $s$. The value of an undefined variable $V$ is detoned by the symbol $\bot$ and can assume any value $v \in D(V)$. We say that $s \subseteq t$ if the set of facts of state $s$ is completely contained in the set of facts of state $t$, then it is possible to assign the undefined variables such that $s = t$. Therefore, a partial state $p$ is a set of states containing every state whose $s \subseteq p$. The initial state $s_0$ is a complete state that corresponds to the initial variable assignment. The goal state $s^*$ is defined as a partial state.
+A state in which all variables are defined is also called a complete state. When the set of variables is not fully assigned, i.e., one or more variables $V \in \mathcal{V}$ do not have a defined value~$v \in D(V)$, it is a partial state. Let $s(V)$ be the value of variable $V$ in state~$s$. The value of an undefined variable $V$ is detoned by the symbol $\bot$ and can assume any value $v \in D(V)$. We say that $s \subseteq t$ if the set of facts of state $s$ is completely contained in the set of facts of state $t$, then it is possible to assign the undefined variables such that $s = t$. Therefore, a partial state $p$ is a set of states containing every state whose $s \subseteq p$. The initial state $s_0$ is a complete state that corresponds to the initial variable assignment. The goal state $s^*$ is defined as a partial state.
 
 \begin{definition}[Operator]\label{def:operator}
     An operator $o$ is defined as a pair of preconditions and effects $(\pre(o),\eff(o))$, both partial states. The preconditions specify the conditions that must hold true in the current state for an operator to be applicable, while the effects describe the changes in the state that occur when the operators is applied.
@@ -52,12 +52,13 @@ A plan is valid for state~$s_0$ ($s_0$-plan), if for $i\in[k]$ operator~$o_i$ ca
 
 The forward state space (\fssp) is the set of all states reachable from the initial state~$s_0$ by applying a sequence of operators. Similarly, the backward state space (\bssp) is the set of all partial states reachable from the goal~$s^*$ by applying a sequence of backward applicable operators.
 
-\subsection{Propositional Representation}
+\subsection{STRIPS Representation}
 \label{sec:background_strips}
 
-Propositional representation is a fundamental approach used in planning tasks to model and reason about the state of the environment. In this representation, a planning task is defined by a set of propositional variables (facts) that describe the various attributes and conditions of the problem domain. Each predicate represents a specific property that can be true or false in a given state. Additionally there is the set of operators, also known as actions, that can be applied to transition between states. The operators are expressed using the predicates.
+STRIPS representation is a fundamental approach used in planning tasks to model and reason about the state of the environment. In this representation, a planning task is defined by a set of propositional variables (facts) that describe the various attributes and conditions of the problem domain. Each predicate represents a specific property that can be true or false in a given state. Additionally there is the set of operators, also known as actions, that can be applied to transition between states. The operators are expressed using the predicates.
 
-\begin{definition}[Propositional Planning Task]\label{def:sasplanningtask}
+\begin{definition}[STRIPS Planning Task]
+    \label{def:stripsplanningtask}
     A propositional planning task is a tuple~$\Pi=\langle\mathcal{V},\mathcal{O},s_0,s^*, \text{cost}\rangle$, where $\mathcal{V}$~is a set of propositions, $\mathcal{O}$~is a set of operators over $\mathcal{V}$, $s_0$~an initial state, $s^*$ a goal condition, and $\text{cost}:\mathcal{O}\rightarrow\R_{+}$ a function mapping operators to costs.
 \end{definition}
 
@@ -188,7 +189,7 @@ An example of a model-based heuristic is the FF~(Fast Forward) heuristic~\cite{H
 Neural networks (NN) have gained significant popularity due to their ability to learn and generalize from complex datasets. In classical planning, various approaches using neural networks have been proposed (see Section~\ref{sec:background_relatedwork}). These approaches range from simpler models that prioritize processing speed -- and consequently, expansion rate -- to more complex architectures that exploit the relational structure of a domain.
 
 \begin{figure}[ht]
-    \caption{The structure of the artificial neuron.}
+    \caption{Structure of the artificial neuron.}
     \label{fig:neuron}
     \centering
     \includegraphics[width=0.9\linewidth]{figures/neuron.png} \\
@@ -223,7 +224,7 @@ ResNet introduces the concept of residual connections or skip connections, which
 
 The Figure~\ref{fig:residual_block} illustrates a schematic representation of both a regular block and a residual block, with a shortcut connection that skips one layer, in a ResNet architecture. In a regular block, the output of its layers is directly mapped to the activation function. On the other hand, in a residual block, the network needs to learn the residual mapping $g(x)=f(x)-x$, making it easier for the network to optimize the model's performance. He et al.~(\citeyear{He.etal/2016}) provides a more detailed understanding of the ResNets.
 
-\section{Learning Heuristic Functions with Neural Networks}
+\subsection{Learning Heuristic Functions}
 \label{sec:background_learningheuristics}
 
 Many heuristics for classical planning are derived from a model of the task, such as the \sas model introduced in this chapter. An obvious alternative is to learn to map a state $s$ to its heuristic value $h(s)$. We focus here on learning with NNs, although other supervised learning methods could be used. To learn a heuristic function, an NN is trained on pairs of states~$s$ and cost-to-goal estimates~$c$. The learned heuristic functions are usually not admissible, so traditional optimality guarantees are lost.
@@ -237,15 +238,15 @@ Additionally, and related to challenges C3 and C4, network architecture and samp
 \section{Related Work}
 \label{sec:background_relatedwork}
 
-There have been two main research foci on learning heuristic functions. The first uses strongly model-based approaches to generate samples and aims to generalize over domains or a planning formalism. The second uses partially model-based approaches to generate samples and aims to generalize only over a state space. We describe these approaches as partially model-based because they only use the model to identify mutexes.
+There have been two main research foci on learning heuristic functions. The first uses strongly model-based approaches to generate samples and aims to generalize over domains or a planning formalism. The second uses partially model-based approaches to generate samples and aims to generalize only over a state space. We describe these approaches as partially model-based since they only use the model to identify mutexes.
 
 \subsection{Strongly Model-Based}
 
-The usual setting for the first set of approaches~\cite{Toyer.etal/2018,Shen.etal/2020,Toyer.etal/2020,Gehring.etal/2022,Stahlberg.etal/2022} is to train a structured NN with samples of small tasks of a domain generated with a strongly model-based method and evaluated on larger tasks of the same domain. The structured networks trained can be general networks such as neural logic machines~\cite{Dong.etal/2018} and graph neural networks~\cite{Gori.etal/2005,Scarselli.etal/2008}
+The usual setting for the first set of approaches~\cite{Toyer.etal/2018,Shen.etal/2020,Toyer.etal/2020,Gehring.etal/2022,Stahlberg.etal/2022} is to train a structured NN with samples of small tasks of a domain generated with a strongly model-based method and evaluated on larger tasks of the same domain. Structured networks trained can be general networks such as neural logic machines~\cite{Dong.etal/2018} and graph neural networks~\cite{Gori.etal/2005,Scarselli.etal/2008}
 
-In the context of planning, Shen et al.~(\citeyear{Shen.etal/2020}) introduced hypergraph neural networks (HGN) as an extension of graph networks~\cite{Battaglia.etal/2018}. HGN aims to learn planning heuristics through training, with a particular focus on developing domain-independent heuristics capable of generalizing across various domains, as well as domain-specific and multi-domain heuristics. HGN encompasses vertices representing task propositions within a hypergraph structure, with edges denoting actions connecting the preconditions to their effects. The network learns latent features directly from the hypergraph representation of the planning problem.
+In the context of planning, Shen et al.~(\citeyear{Shen.etal/2020}) introduced hypergraph neural networks (HGN) as an extension of graph networks~\cite{Battaglia.etal/2018}. HGN aims to learn planning heuristics through training, with a particular focus on developing domain-independent heuristics capable of generalizing across various domains, as well as domain-specific and multi-domain heuristics. A HGN encompasses vertices representing task propositions within a hypergraph structure, with edges denoting actions connecting the preconditions to their effects. The network learns latent features directly from the hypergraph representation of the planning problem.
 
-Another approach proposed explicitly for planning tasks is the Action Schema Networks (ASNet)~\cite{Toyer.etal/2018}. ASNets are composed of alternating proposition and action layers, with the first and last layer always being an action layer. Each action layer contains an action module for each action in a specific task, while each propositional layer contains a proposition module for each proposition in the task. Weight sharing is employed to optimize efficiency, where action modules with actions derived from the same action schema share the same weight, and proposition modules with propositions derived from the same predicate share the same weight. This weight sharing allows for the reuse of a single set of learned weights across all tasks within a class of planning problems.
+Another approach proposed explicitly for planning tasks is the Action Schema Networks~(ASNet)~\cite{Toyer.etal/2018}. ASNets are composed of alternating proposition and action layers, with the first and last always being an action layer. Each action layer contains an action module for each action in a specific task, while each propositional layer contains a proposition module for each proposition in the task. Weight sharing is employed to optimize efficiency, where action modules with actions derived from the same action schema share the same weight, and proposition modules with propositions derived from the same predicate share the same weight. This weight sharing allows for the reuse of a single set of learned weights across all tasks within a class of planning problems.
 
 These networks require the logical description of the domain and the task to be instantiated and can generalize well, with competitive results compared to logic-based heuristics. These approaches also help in understanding learning heuristics. For example, the main goal of St\aa hlberg et al.~(\citeyear{Stahlberg.etal/2022}) is to understand the expressive power and limitations of learning heuristics. The main limitation of these approaches is the strong dependence on the domain model and task description.
 
@@ -253,10 +254,10 @@ These networks require the logical description of the domain and the task to be 
 
 The second set of approaches~\cite{Ferber.etal/2020a, Yu.etal/2020, Ferber.etal/2022, OToole/2022} typically trains an FNN and evaluates the learned heuristic on a state space using tasks with the same goal and different initial states. These networks are trained with pairs of states and cost-to-goal estimates. In this setting, Ferber et al.~(\citeyear{Ferber.etal/2020a}) systematically study hyperparameters on the architecture of the FNN and found that their influence is secondary. They found that for a fixed architecture, two aspects significantly influence how informed the heuristic is: the subset of selected samples and the size of the sample set. 
 
-Ferber et al.~(\citeyear{Ferber.etal/2022}) uses a combination of backward and forward searches~\cite{Arfaee.etal/2011}. First, it generates new initial states with backward random walks and then solves them with a GBFS guided by a learned heuristic. The sampling is performed in parallel with the training, and the number of samples per search varies throughout the process. Initially, it starts with a random value ranging from $0$ to $5$, and it doubles as plans are found. The plans found provide the samples for the next training epoch, where each sample is a state in the plan with the cost-to-goal estimate as its distance to the goal. Their FNN architecture is a ResNet with two hidden layers and a residual block consisting of two hidden layers.
+Ferber et al.~(\citeyear{Ferber.etal/2022}) uses a combination of backward and forward searches~\cite{Arfaee.etal/2011}. First, it generates new initial states with backward random walks and then solves them with a GBFS guided by a learned heuristic. The sampling is performed in parallel with the training, and the number of samples per search varies throughout the process. Initially, it starts with a random value ranging from $0$ to $5$, and doubles as plans are found. The plans found provide the samples for the next training epoch, where each sample is a state in a plan with the cost-to-goal estimate as its distance to the goal through the plan. Their FNN architecture is a ResNet with two hidden layers and a residual block consisting of two more hidden layers.
 
-O'Toole et al.~(\citeyear{OToole/2022}) uses the same FNN architecture as Ferber et al.~(\citeyear{Ferber.etal/2022}), which is also employed in this dissertation. They employ random walks to perform $5$ backward searches from the goal, with a depth of $500$, where the depth at which the state is generated serves as a cost-to-goal estimate. Subsequently, each sampled partial state is converted into $20$ complete states and added to the sample set. Additionally, they sample an additional $50$\,K randomly generated states with high cost-to-goal estimates, resulting in a total of $100$\,K samples. They showed that random sampling significantly improves the performance of the heuristic function.
+O'Toole et al.~(\citeyear{OToole/2022}) uses the same FNN architecture as Ferber et al.~(\citeyear{Ferber.etal/2022}), which is also applied in this dissertation. They employ random walks to perform $5$ backward searches from the goal, with a depth of $500$, where the depth at which the state is generated serves as a cost-to-goal estimate. Each sampled partial state is then converted into $20$ complete states and added to the sample set. Furthermore, they sample an additional $50$\,K randomly generated states with high cost-to-goal estimates, resulting in a total of $100$\,K samples. They showed that random sampling significantly improves the performance of the heuristic function.
 
-Yu et al.~(\citeyear{Yu.etal/2020}) employed a backward search approach using the DFS algorithm. In their best configuration, they perform $800$ searches, each limited to $500$ samples. Thus, their sample set comprises $400$\,K states, with the depth at which each state was generated serving as a cost-to-goal estimate. In contrast to the previous approaches, they use a compact FNN consisting of only one hidden layer with $16$ neurons.
+Yu et al.~(\citeyear{Yu.etal/2020}) employed a backward search approach using the DFS algorithm. In their best configuration, they perform $800$ searches, sampling $500$ states each. Thus, their sample set comprises $400$\,K states, with the depth at which each state was generated serving as a cost-to-goal estimate. In contrast to the previous approaches, they use a compact FNN consisting of only one hidden layer with $16$ neurons.
 
 The methods from the partially model-based approaches are highly independent of the domain model and planning task description and require low computational resources to generate samples and train the FNN. However, they suffer from high performance variability, given the FNN initialization and the sample set used. Also, despite having competitive results compared to logic-based heuristics, they are still unable to surpass the goal-count heuristic.
