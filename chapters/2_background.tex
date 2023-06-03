@@ -1,7 +1,7 @@
 \chapter{Background}
 \label{sec:background}
 
-This chapter provides an overview of the fundamental concepts and techniques that form the background for this dissertation. We introduce classical planning and its notation, including the planning formalisms, in Section~\ref{sec:background_classicalplanning}. Search algorithms used in sampling generation and heuristic search are presented in Section~\ref{sec:background_searchalgorithms}. Additionally, in Section~\ref{sec:background_neuralnetworks}, we delve into using neural networks to learn heuristic functions. Finally, we review related work in Section~\ref{sec:background_relatedwork}, discussing previous approaches and techniques contributing to sample generation and learning of heuristic functions.
+This chapter provides an overview of the fundamental concepts and techniques that form the background for this dissertation.
 
 \section{Classical Planning}
 \label{sec:background_classicalplanning}
@@ -12,13 +12,13 @@ To find a solution from search algorithms, it is necessary to provide a formal d
     A variable $v$ has a finite domain $D(v)$ and is defined as a single value~$d \in D(v)$.
 \end{definition}
 
-The variables define the current state of the environment. For example, consider a domain with a robot that navigates on a grid. A variable, $v_{at}$, represents the robot's position, where each value~$d \in D(v_{at})$ corresponds to a location on the grid. Typically a domain has several variables.
+The variables define the current state of the environment. For example, consider a domain with a robot that navigates on a grid. A variable, $v_{at}$, represents the robot's position, where each value~$d \in D(v_{at})$ corresponds to a location on the grid. Typically a domain has several variables. The set $\mathcal{V}$ represents all variables in a given task.
 
 \begin{definition}[Fact]\label{def:fact}
     An fact $f$ is an assignemnt of a value~$d \in D(v)$ to a variable $v$.
 \end{definition}
 
-Each variable $v$ generates $|D(v)|$~facts. When considering the previous example in a $2 \times 2$ grid with 4 tiles labeled $t_0$ to $t_3$, the variable~$v_{at}$ has the set of facts~$F_{at}=\{\text{at}(t_0),\text{at}(t_1),\text{at}(t_2),\text{at}(t_3)\}$.
+Each variable $v$ generates $|D(v)|$~facts. When considering the previous example in a $2 \times 2$ grid with 4 cells labeled $t_0$ to $t_3$, the variable~$v_{at}$ has the set of facts~$F_{at}=\{\text{at}(t_0),\text{at}(t_1),\text{at}(t_2),\text{at}(t_3)\}$. The set $\mathcal{F}$ represents all facts in a given task.
 
 \begin{definition}[Mutex]\label{def:mutex}
     A mutex (mutual exclusion) is a condition where two or more facts cannot occur simultaneously.
@@ -33,10 +33,10 @@ In the example domain, the robot cannot be in two positions simultaneously. Henc
 A state where all variables are defined is also called a complete state. When the set of variables is not fully assigned, i.e., one or more variables $v \in \mathcal{V}$ do not have a defined value~$d \in D(v)$, it is a partial state. Let $s(v)$ be the value of variable $v$ in state~$s$. The value of an undefined variable $v$ is written as $s(v) = \bot$ and can assume any value~$d \in D(v)$. We say that $s \subseteq t$ if $s(v) = t(v)$ for all $v \in \mathcal{V}$ such that $s(v) \neq \bot$. Then, if there are undefined values in $s$, there is an assignment such that $s = t$. Therefore, a partial state $p$ is a set of states containing every state whose $s \subseteq p$. The initial state $s_0$ is a complete state that corresponds to the initial variable assignment. The goal state $s^*$ is defined as a partial state.
 
 \begin{definition}[Operator]\label{def:operator}
-    An operator $o$ is defined as a pair of preconditions and effects $(\pre(o),\eff(o))$, both partial states. The preconditions specify the conditions that must hold in the current state for an operator to be applicable, while the effects describe the changes in the state that occur when the operator is applied.
+    An operator $o$, also known as action, is defined as a pair of preconditions and effects $(\pre(o),\eff(o))$, both partial states. The preconditions specify the conditions that must hold in the current state for an operator to be applicable, while the effects describe the changes in the state that occur when the operator is applied.
 \end{definition}
 
-An operator $o$ is applicable to a state $s$ if $\pre(o) \subseteq s$, and produces a successor state $s' = \sucs(s,o) := \eff(o) \circ s$, where $s' = t \circ s$ is defined by $s'(v) = t(v)$ for all $v$ such that $t(v)$ is defined, and $s'(v) = s(v)$ otherwise. The set of all successor states of state $s$ is~$\sucs(s)=\{\sucs(s,o)\mid o\in \mathcal{O}, \pre(o) \subseteq s\}$. If $s$ is a partial state, when $\pre(o)$ mentions a variable $v$ and $s(v) = \bot$, it is applicable over $s$.
+Let $\mathcal{O}$ be the set of all operators in a given task. An operator $o \in \mathcal{O}$ is applicable to a state $s$ if $\pre(o) \subseteq s$, and produces a successor state $s' = \sucs(s,o) := \eff(o) \circ s$, where $s' = t \circ s$ is defined by $s'(v) = t(v)$ for all $v$ such that $t(v)$ is defined, and $s'(v) = s(v)$ otherwise. The set of all successor states of state $s$ is~$\sucs(s)=\{\sucs(s,o)\mid o\in \mathcal{O}, \pre(o) \subseteq s\}$. If $s$ is a partial state, when $\pre(o)$ mentions a variable $v$ and $s(v) = \bot$, it is applicable over~$s$. Each operator is assigned a cost based on the mapping function~$cost:\mathcal{O}\rightarrow\R_{+}$; when the cost is omitted, it assumes a unit cost, i.e., $cost(o) = 1$ for each operator $o \in \mathcal{O}$.
 
 A sequential application of operators is called a progression. Alternatively, a regression is a backward sequential application of operators. For regression, we consider an operator $o$ to be relevant for partial state~$s$ if $\eff_r=\dom(\eff(o))\cap\dom(s)\neq\emptyset$; the operator is consistent if $\eff(o)|_{\eff_r} \subseteq s$. Relevance requires at least one defined effect in the partial state to be regressed, consistency, and an agreement on defined effects. An operator~$o$ then is \define{backward} applicable in partial state~$s$ if it is relevant and consistent with~$s$ and leads to predecessor $r=\pre(o)\circ (s|_{\dom(s)\setminus\eff_r})$. Note that $\sucs(r,o)\subseteq s$, but may differ from $s$. Similar to progression, a partial state~$s$ has predecessors $\pred(s)=\{\pred(s,o)\mid o\in \mathcal{O}, \text{o backward applicable to }s\}$. A regression sequence from state $s_0$ then is valid if $o_i$ can be applied to $s_{i-1}$ and produces $s_i=\pred(s_{i-1},o_i)$. All partial states~$s_k$ can reach a partial state $s\subseteq s_0$ in at most~$k$ forward applications of the reversed operator sequence.
 
@@ -47,10 +47,10 @@ A sequential application of operators is called a progression. Alternatively, a 
 A plan is valid for state~$s_0$, referred to as an $s_0$-plan, if for $i\in[k]$ operator~$o_i$ can be applied to $s_{i-1}$ and produces $s_i=\sucs(s_{i-1},o_i)$, where $s^* \subseteq s_k$. The cost of plan~$\pi$ is $\sum_{i\in[k]} \text{cost}(o_i)$. When a plan has the lowest cost among all $s_0$-plans, it is called an optimal plan.
 
 \begin{definition}[State Space]\label{def:statespace}
-    A state space is the set of all states over the variables~$v \in \mathcal{V}$ of a task.
+    A state space is the set of all the states over the variables~$v \in \mathcal{V}$.
 \end{definition}
 
-The forward state space (FSS) is the set of all states reachable from the initial state~$s_0$ by applying a sequence of operators. Similarly, the backward state space (BSS) is the set of all partial states reachable from the goal~$s^*$ by applying a sequence of backward operators.
+The forward state space (FSS) is the set of all the states reachable from initial state~$s_0$ by applying a sequence of operators. Similarly, the backward state space (BSS) is the set of all the partial states reachable from the goal~$s^*$ by applying a sequence of backward operators.
 
 \subsection{STRIPS Representation}
 \label{sec:background_strips}
@@ -59,7 +59,7 @@ The STRIPS (Stanford Research Institute Problem Solver) representation~\cite{Fik
 
 \begin{definition}[STRIPS Planning Task]
     \label{def:stripsplanningtask}
-    A STRIPS planning task is defined as a tuple~$\Pi=\langle\mathcal{F},\mathcal{O},s_0,s^*, \text{cost}\rangle$, where $\mathcal{F}$~is a set of facts, $\mathcal{O}$~is a set of operators over $\mathcal{V}$, $s_0$~an initial state, $s^*$ a goal condition, and $\text{cost}:\mathcal{O}\rightarrow\R_{+}$ a function mapping operators to costs.
+    A STRIPS planning task is defined as a tuple~$\Pi=\langle\mathcal{F},\mathcal{O},s_0,s^*, \text{cost}\rangle$, where $\mathcal{F}$~is a set of facts, $\mathcal{O}$~is a set of operators over $\mathcal{F}$, $s_0$~an initial state, $s^*$ the goal condition, and $\text{cost}:\mathcal{O}\rightarrow\R_{+}$ a function mapping operators to costs.
 \end{definition}
 
 Throughout this dissertation, we present samples represented in the STRIPS formalism. The motivation behind this approach lies in the compatibility between the propositional nature of STRIPS, where facts can be either true or false, and the proposed neural network input in binary format, which is more suitable for training (Section~\ref{sec:background_learningheuristics}). Additionally, the Fast~Downward planning system used in this dissertation incorporates PDDL (Planning Domain Definition Language) as its input language. PDDL provides a formal and widely accepted syntax for describing planning tasks in the STRIPS representation.
@@ -90,7 +90,7 @@ Throughout this dissertation, we present samples represented in the STRIPS forma
 Source: International Planning Competition (IPC) 2014.
 \end{figure}
 
-Figure~\ref{fig:pddl} shows an example of a domain description in PDDL. The VisitAll domain represents a scenario where a robot navigates a grid and marks each tile it steps on as visited. The objective of this domain is typically to visit all tiles in the grid. The initial and goal states are described in a second file, the problem PDDL, along with the object declarations. The domain PDDL specifies the predicates and actions~(operators). In the VisitAll example, we have one object type~(place), three predicates~(connected, at-robot, and visited), and one action~(move). The combination of predicates with objects forms the facts in a process called grounding. For instance, in a grid with two connected tiles, $t1$~and~$t2$, we have the set of facts $\mathcal{F}=\{$connected$(t1,t2)$, \mbox{connected$(t2,t1)$}, \mbox{at-robot$(t1)$}, \mbox{at-robot$(t2)$}, \mbox{visited$(t1)$}, visited$(t2)\}$.
+Figure~\ref{fig:pddl} shows an example of a domain description in PDDL. The VisitAll domain represents a scenario where a robot navigates a grid and marks each cell it steps on as visited. The objective of this domain is typically to visit all cells in the grid. The initial and goal states are described in a second file, the problem PDDL, along with the object declarations. The domain PDDL specifies the predicates and actions~(operators). In the VisitAll example, we have one object type~(place), three predicates~(connected, at-robot, and visited), and one action~(move). The combination of predicates with objects forms the facts in a process called grounding. For instance, in a grid with two connected cells, $t1$~and~$t2$, we have the set of facts $\mathcal{F}=\{$connected$(t1,t2)$, \mbox{connected$(t2,t1)$}, \mbox{at-robot$(t1)$}, \mbox{at-robot$(t2)$}, \mbox{visited$(t1)$}, visited$(t2)\}$.
 
 \subsection{\sas Representation}
 \label{sec:background_sas}
@@ -98,20 +98,20 @@ Figure~\ref{fig:pddl} shows an example of a domain description in PDDL. The Visi
 Another approach to modeling planning tasks is using the \sas representation \cite{Backstrom.Nebel/1995}. Although Fast~Downward takes propositional representation with PDDL as its input, internally, it uses finite domains to represent states. The \sas representation enhances the capabilities of a propositional representation by using finite domains $D$, which explicitly define the possible values for each variable. This enables a more compact and structured representation of the problem.
 
 \begin{definition}[\sas Planning Task]\label{def:sasplanningtask}
-    A~\sas planning task is defined as a tuple~$\Pi=\langle\mathcal{V},\mathcal{O},s_0,s^*, \text{cost}\rangle$, where $\mathcal{V}$~is a set of variables, $\mathcal{O}$~is a set of operators over $\mathcal{V}$, $s_0$~an initial state, $s^*$ a goal condition, and $\text{cost}:\mathcal{O}\rightarrow\R_{+}$ a function mapping operators to costs.
+    A~\sas planning task is defined as a tuple~$\Pi=\langle\mathcal{V},\mathcal{O},s_0,s^*, \text{cost}\rangle$, where $\mathcal{V}$~is a set of variables, $\mathcal{O}$~is a set of operators over $\mathcal{V}$, $s_0$~an initial state, $s^*$ the goal condition, and $\text{cost}:\mathcal{O}\rightarrow\R_{+}$ a function mapping operators to costs.
 \end{definition}
 
-Essentially, both \sas and STRIPS differ in their method of representing states and can be converted between each other. For example, consider the VisitAll domain depicted in Figure~\ref{fig:pddl}, specifically the at-robot predicate. In PDDL, the action always replaces one robot position with another. Thus, \sas represents this predicate using a variable $v$ and a value $d \in D(v)$ for each possible robot position. Consequently, in large grids with hundreds of positions where propositional representation would require numerous facts, \sas efficiently represents them using a single variable.
+\sas and STRIPS differ in their method of representing states and can be converted between each other. For example, consider the VisitAll domain depicted in Figure~\ref{fig:pddl}, specifically the at-robot predicate. In PDDL, the action always replaces one robot position with another. Thus, \sas represents this predicate using a variable $v$ and a value $d \in D(v)$ for each possible robot position. Consequently, in large grids with hundreds of positions where propositional representation would require many facts, \sas efficiently represents them using a single variable.
 
 \section{Search Algorithms}
 \label{sec:background_searchalgorithms}
 
-Search algorithms enable exploring the state space to find a solution for a planning task. These algorithms systematically traverse the state space of a problem, aiming to reach a goal state from an initial state. Blind search algorithms, in particular, operate without any prior knowledge about the problem domain and rely solely on the problem representation to guide the search. On the other hand, heuristic search incorporates problem-specific knowledge. It uses heuristics, which are approximate or informed estimates of the cost or distance to the goal, to prioritize exploring more promising paths. The following sections present both approaches.
+Search algorithms enable exploring the state space to find a solution for a planning task. These algorithms systematically traverse the state space of a problem, aiming to reach the goal state from an initial state. Blind search algorithms, in particular, operate without any prior knowledge about the problem domain and rely solely on the problem representation to guide the search. On the other hand, heuristic search incorporates problem-specific knowledge. It uses heuristics, which are approximate or informed estimates of the cost or distance to the goal, to prioritize exploring more promising paths. The following sections present both approaches.
 
 \subsection{Blind Search}
 \label{sec:background_blindsearch}
 
-By exploring the state space exhaustively, blind search algorithms diligently navigate through various states and paths to uncover potential solutions. An example of a blind search algorithm is the Breadth-First Search (BFS). BFS explores the state space by systematically expanding all the states at the current depth before moving to the next level. This strategy ensures that the shortest path to a goal state is found. However, BFS can be memory-intensive as it needs to store all the generated but not expanded states in memory.
+By exploring the state space exhaustively, blind search algorithms diligently navigate through various states and paths to uncover potential solutions. An example of a blind search algorithm is the Breadth-First Search (BFS). BFS explores the state space by systematically expanding all the states at the current depth before moving to the next level. This strategy ensures that the shortest path to the goal state is found. However, BFS can be memory-intensive as it needs to store all the generated but not expanded states in memory.
 
 Depth-First Search (DFS) also performs a blind search. In DFS, the search starts from an initial state and explores the state space by iteratively expanding the deepest unexplored state. This algorithm is memory-efficient as it only needs to keep track of a single path from the initial state to the current state. However, DFS does not guarantee an optimal solution and can get trapped in deep branches of the state space.
 
