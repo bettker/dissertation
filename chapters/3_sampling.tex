@@ -152,7 +152,7 @@ By incorporating random sampling into our study, we aim to investigate their inf
 
 The quality of the sample set is also influenced by the cost-to-goal estimate's accuracy, which helps improve the performance of the learned heuristics and, consequently, reduces the number of expanded states during a search. While it is generally expected that better $h$-value results in more reliable heuristic functions, leading to a more efficient search, this relationship is not always guaranteed~\cite{Holte/2010}.
 
-To improve the cost-to-goal estimate, the objective is to approximate the true goal distance~\hstar. Our sampling approach ensures that the cost-to-goal estimates assigned to the samples are based on the operators used to reach that particular state. Thus, we guarantee that a sample never underestimates the \hstar.
+To improve the cost-to-goal estimate, the objective is to approximate the actual goal distance~\hstar. Our sampling approach ensures that the cost-to-goal estimates assigned to the samples are based on the operators used to reach that particular state. Thus, we guarantee that a sample never underestimates the \hstar.
 
 \begin{property}
     \label{prop:hvalue}
@@ -169,7 +169,7 @@ Therefore, we apply two simple procedures that improve the cost-to-goal estimate
 
 When generating samples through multiple rollouts, there is a possibility of overlap, where the same state could appear at different distances across different rollouts, leading to varying cost-to-goal estimates. This introduces a challenge when training the NN, as different labels for the same sample can result in inconsistency and affect learning. To address this issue and improve the quality of cost-to-goal estimates, we use Sample Improvement (SAI).
 
-SAI aims to improve the consistency and reliability of the training data by selecting a single cost-to-goal estimate for each unique state. \cref{prop:hvalue} guarantees that no sampled cost-to-goal estimate underestimates the true goal distance~\hstar, so the lower the value, the closer it is to \hstar. Therefore, we choose the sample with the lowest cost-to-goal estimate to represent each particular state.
+SAI aims to improve the consistency and reliability of the training data by selecting a single cost-to-goal estimate for each unique state. \cref{prop:hvalue} guarantees that no sampled cost-to-goal estimate underestimates the actual goal distance~\hstar, so the lower the value, the closer it is to \hstar. Therefore, we choose the sample with the lowest cost-to-goal estimate to represent each particular state.
 
 For all sampled states $s$ we update each cost-to-goal estimate to the best estimate $h(s) = \min\{h_i \mid s=s_i, i\in[N]\}$. Since different partial states can generate identical complete states, the improvement is applied to partial and complete states. Choosing the minimum $h$-value is sound since, in all cases, we have valid plans from a regression that witness these distances; for the same reason, \cref{prop:hvalue} still holds.
 
@@ -240,7 +240,7 @@ SUI takes advantage of the fact that neighboring samples, with one distance oper
         \ForEach{$\s \in \S$}{
             \If{$\s \notin \Ms$}{
                 \ForEach{$\sp \in succ(\s)$}{
-                    $\Ms[\s] \gets \Ms[\s] \cup \{\t \mid \t \in \S\ \textnormal{\textbf{and}}\ \sp \subseteq \t\}$
+                    $\Ms[\s] \gets \Ms[\s] \cup \{\t \mid \t \in \S\ \textnormal{\textbf{and}}\ \t \subseteq \sp\}$
                 }
             }
             $\Mh[\s] \gets min(\Mh[\s], h(\s))$ \\
