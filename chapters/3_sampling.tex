@@ -199,7 +199,7 @@ For all sampled states $s$ we update each cost-to-goal estimate to the best esti
         \draw[-Straight Barb, color=royalblue] (s5) to (s2);
         \draw[-Straight Barb, color=royalblue] (s6) to (s3);
         \draw[-Straight Barb, color=royalred] (s7) to (s4);
-        \draw[-Straight Barb, color=royalred] (s8) to[bend right=5] (s7);
+        \draw[-Straight Barb, color=royalred] (s8) to[bend left=5] (s7);
         \draw[-Straight Barb, color=royalblue] (s8) to[bend left=5] (s10);
         \draw[-Straight Barb, color=royalblue] (s9) to[bend left=5] (s5);
         \draw[-Straight Barb, color=royalblue] (s10) to (s9);
@@ -319,7 +319,7 @@ Our approach follows the workflow shown in Figure~\ref{fig:workflow}.
         \node[draw=black, fill=none, rounded corners, inner sep=5pt] (D) at (0,3.75) {State completion};
         \node[draw=black, fill=none, rounded corners, inner sep=5pt] (E) at (0,2.5) {Generation of random samples};
         \node[draw=black, fill=none, rounded corners, inner sep=5pt] (F) at (0,1.25) {SAI applied in complete states};
-        \node[draw=black, dashed, fill=none, rounded corners, inner sep=5pt] (G) at (0,0) {Learning stage};
+        \node[fill=none, rounded corners, inner sep=5pt] (G) at (0,0) {Learning stage};
     
         \draw[-{Stealth[length=3mm, width=2mm]}] (A) to (B);
         \draw[-{Stealth[length=3mm, width=2mm]}] (B) to (C);

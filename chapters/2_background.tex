@@ -36,7 +36,7 @@ A state where all variables are defined is also called a complete state. When th
     An operator $o$, also known as action, is defined as a pair of preconditions and effects $(\pre(o),\eff(o))$, both partial states. The preconditions specify the conditions that must hold in the current state for an operator to be applicable, while the effects describe the changes in the state that occur when the operator is applied.
 \end{definition}
 
-Let $\mathcal{O}$ be the set of all operators in a given task. An operator $o \in \mathcal{O}$ is applicable to a state $s$ if $s \subseteq t$, and produces a successor state $s' = \sucs(s,o) := \eff(o) \circ s$, where \mbox{$c = a \circ b$} is defined by $c(v) = a(v)$ for all $v$ such that $a(v)$ is defined, and $c(v)=b(v)$ otherwise. The set of all successor states of state $s$ is~$\sucs(s)=\{\sucs(s,o)\mid o\in \mathcal{O}, s \subseteq \pre(o)\}$. If $s$ is a partial state, when $\pre(o)$ mentions a variable $v$ and $s(v) = \bot$, it is applicable over~$s$\rv{it is like that in regression (from ferber code); i'll recheck}. Each operator is assigned a cost based on the mapping function~$cost:\mathcal{O}\rightarrow\R_{+}$; when the cost is omitted, it assumes a unit cost, i.e., $cost(o) = 1$ for each operator $o \in \mathcal{O}$.
+Let $\mathcal{O}$ be the set of all operators in a given task. An operator $o \in \mathcal{O}$ is applicable to a state $s$ if $s \subseteq t$, and produces a successor state $s' = \sucs(s,o) := \eff(o) \circ s$, where \mbox{$c = a \circ b$} is defined by $c(v) = a(v)$ for all $v$ such that $a(v)$ is defined, and $c(v)=b(v)$ otherwise. The set of all successor states of state $s$ is~$\sucs(s)=\{\sucs(s,o)\mid o\in \mathcal{O}, s \subseteq \pre(o)\}$. Each operator is assigned a cost based on the mapping function~$cost:\mathcal{O}\rightarrow\R_{+}$; when the cost is omitted, it assumes a unit cost, i.e., $cost(o) = 1$ for each operator $o \in \mathcal{O}$.
 
 A sequential application of operators is called a progression. Alternatively, a regression is a backward sequential application of operators. For regression, we consider an operator $o$ to be relevant for partial state~$s$ if $\eff_r=\dom(\eff(o))\cap\dom(s)\neq\emptyset$; the operator is consistent if $s \subseteq \eff(o)|_{\eff_r}$. Relevance requires at least one defined effect in the partial state to be regressed, consistency, and an agreement on defined effects. An operator~$o$ then is \define{backward} applicable in partial state~$s$ if it is relevant and consistent with~$s$ and leads to predecessor $r=\pre(o)\circ (s|_{\dom(s)\setminus\eff_r})$. Note that $s \subseteq \sucs(r,o)$, but may differ from $s$. Similar to progression, a partial state~$s$ has predecessors $\pred(s)=\{\pred(s,o)\mid o\in \mathcal{O}, \text{o backward applicable to }s\}$. A regression sequence from state $s_0$ then is valid if $o_i$ can be applied to $s_{i-1}$ and produces $s_i=\pred(s_{i-1},o_i)$. All partial states~$s_k$ can reach a partial state $s_0 \subseteq s$ in at most~$k$ forward applications of the reversed operator sequence.
 
@@ -188,9 +188,11 @@ Neural networks (NN) have gained popularity due to their ability to learn and ge
 \begin{figure}[ht]
     \caption{Structure of the artificial neuron.}
     \label{fig:neuron}
+    \addvspace{\baselineskip}
     \centering
-    \includegraphics[width=0.8\linewidth]{figures/neuron.png} \\
-    Source: Haykin~(\citeyear{Haykin/2009})\rvi{convert to pdf}
+    \includegraphics[width=0.8\linewidth]{figures/neuron.pdf} \\
+    \addvspace{\baselineskip}
+    Source: Haykin~(\citeyear{Haykin/2009})
 \end{figure}
 
 Essentially, NNs are composed of multiple artificial neurons, whose structure is illustrated in Figure~\ref{fig:neuron}. A neuron~$k$ consists of four components: input signals~$x_1,\ldots,x_m$, weights~$w_{k1},\ldots,w_{km}$, bias term~$b_k$, and an activation function~$\varphi$. A neuron~$k$ produces an output~$y_k = \varphi(v_k + b_k)$ where $v_k = \sum_{j \in [m]} w_{kj} x_j$. The activation function introduces non-linearity to the output. One common example is the Rectified Linear Unit (ReLU) activation $\varphi(v) = max(0,v)$.
@@ -200,10 +202,9 @@ Essentially, NNs are composed of multiple artificial neurons, whose structure is
     \label{fig:neuralnetwork}
     \addvspace{\baselineskip}
     \centering
-    \includegraphics[width=0.9\linewidth]{figures/network.png} \\
+    \includegraphics[width=0.9\linewidth]{figures/network.pdf} \\
     \addvspace{\baselineskip}
     Source: Haykin~(\citeyear{Haykin/2009})
-    \rvi{convert to pdf}
 \end{figure}
 
 The NN comprises multiple layers of neurons, as illustrated in Figure~\ref{fig:neuralnetwork}, which transform the input data into an output. The input layer receives the input data and passes it to the subsequent layers. The hidden layers, located between the input and output layers, weigh the neuron weights to learn the features that transform the input data into the desired output. These hidden layers enable the network to capture complex patterns and relationships within the data. Finally, the output layer produces the prediction for the given input. A specific type of NN called Feedforward Neural Network (FNN) allows information to flow in one direction, from the input layer through the hidden layers to the output layer. When an NN has multiple hidden layers, usually more than two\rv{there is no consensus but it is common to find that, in general, more than two hidden layers is deep}, it is referred to as a deep neural network.
