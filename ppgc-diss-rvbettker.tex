@@ -1,26 +1,24 @@
-\documentclass[docs/ppgc,docs/diss,english]{iiufrgs}
+\documentclass[inputs/ppgc,inputs/diss,english]{iiufrgs}
 
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 \usepackage{times}
 % \usepackage{palatino}
 % \usepackage{mathptmx}
-\usepackage[alf,abnt-emphasize=bf]{abntex2cite}
+\usepackage[alf,abnt-emphasize=bf]{inputs/abntex2cite}
 
 \usepackage[textsize=tiny,colorinlistoftodos,prependcaption]{todonotes}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{enumitem}
-\usepackage[capitalize]{cleveref}
-\usepackage{booktabs}
 \usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+\usepackage{booktabs}
 \usepackage{listings}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta}
 \usepackage{xcolor}
-
-\newtheorem{definition}{Definition}
+\usepackage[capitalize]{cleveref}
 
 \input{definitions}
 
@@ -34,7 +32,7 @@
 
 \date{June}{2023}
 
-% nominata
+%% nominata
 \renewcommand{\nominataReit}{Prof.~Carlos Andr{\'e} Bulh{\~o}es}
 % \renewcommand{\nominataReitname}{Rector}
 \renewcommand{\nominataPRCA}{Prof\textsuperscript{a}.~Patricia Pranke}
@@ -72,7 +70,7 @@
 \input{chapters/5_limitations.tex}
 \input{chapters/6_conclusion.tex}
 
-\bibliographystyle{abntex2-alf}
+\bibliographystyle{inputs/abntex2-alf}
 \bibliography{bib/references.bib}
 
 \input{chapters/appendix.tex}

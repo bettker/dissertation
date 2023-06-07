@@ -1,0 +1,16 @@
+\begin{tikzpicture}
+    \node[draw=black, fill=none, rounded corners, inner sep=5pt] (A) at (0,7.5) {Sampling stage};
+    \node[draw=black, fill=none, rounded corners, inner sep=5pt] (B) at (0,6.25) {SAI applied in partial states};
+    \node[draw=black, fill=none, rounded corners, inner sep=5pt] (C) at (0,5) {SUI};
+    \node[draw=black, fill=none, rounded corners, inner sep=5pt] (D) at (0,3.75) {State completion};
+    \node[draw=black, fill=none, rounded corners, inner sep=5pt] (E) at (0,2.5) {Generation of random samples};
+    \node[draw=black, fill=none, rounded corners, inner sep=5pt] (F) at (0,1.25) {SAI applied in complete states};
+    \node[fill=none, rounded corners, inner sep=5pt] (G) at (0,0) {Learning stage};
+
+    \draw[-{Stealth[length=3mm, width=2mm]}] (A) to (B);
+    \draw[-{Stealth[length=3mm, width=2mm]}] (B) to (C);
+    \draw[-{Stealth[length=3mm, width=2mm]}] (C) to (D);
+    \draw[-{Stealth[length=3mm, width=2mm]}] (D) to (E);
+    \draw[-{Stealth[length=3mm, width=2mm]}] (E) to (F);
+    \draw[-{Stealth[length=3mm, width=2mm]}] (F) to (G);
+\end{tikzpicture}

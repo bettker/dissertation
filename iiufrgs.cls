@@ -38,31 +38,31 @@
 \newcommand{\iiu@aliasdoc}[2]{\DeclareOption{#1}{\AtEndOfClass{\input{#2.def}}}}
 
 % programas
-\iiu@novodoc{docs/cic}
-\iiu@novodoc{docs/ecp}
-\iiu@novodoc{docs/unibral}
-\iiu@novodoc{docs/pgmicro}
-\iiu@novodoc{docs/ppgc}
+\iiu@novodoc{inputs/cic}
+\iiu@novodoc{inputs/ecp}
+\iiu@novodoc{inputs/unibral}
+\iiu@novodoc{inputs/pgmicro}
+\iiu@novodoc{inputs/ppgc}
 
 % tipos de documento
-\iiu@novodoc{docs/dipl}
+\iiu@novodoc{inputs/dipl}
 \iiu@aliasdoc{tc}{dipl}
-\iiu@novodoc{docs/ti}
-\iiu@novodoc{docs/rp}
-\iiu@novodoc{docs/pep}
-\iiu@novodoc{docs/prop-tese}
-\iiu@novodoc{docs/plano-doutorado}
+\iiu@novodoc{inputs/ti}
+\iiu@novodoc{inputs/rp}
+\iiu@novodoc{inputs/pep}
+\iiu@novodoc{inputs/prop-tese}
+\iiu@novodoc{inputs/plano-doutorado}
 
 % Documentos de Doutorado e Mestrado
-\iiu@novodoc{docs/diss}
-\iiu@novodoc{docs/tese}
+\iiu@novodoc{inputs/diss}
+\iiu@novodoc{inputs/tese}
 \iiu@aliasdoc{mestrado}{diss}
 \iiu@aliasdoc{doutorado}{tese}
-\iiu@novodoc{docs/espec}
-\iiu@novodoc{docs/formais}
+\iiu@novodoc{inputs/espec}
+\iiu@novodoc{inputs/formais}
 
 % outros
-\iiu@novodoc{docs/nominatalocal}
+\iiu@novodoc{inputs/nominatalocal}
 \DeclareOption{english}{\@englishtrue\OptionNotUsed}\newif\if@english
 \DeclareOption{noabntcite}{\@noabntcitetrue\OptionNotUsed}\newif\if@noabntcite
 \DeclareOption{oneside}{\AtEndOfClass{\@twosidefalse}\OptionNotUsed}
@@ -79,20 +79,20 @@
 \RequirePackage{keyval}
 
 \RequirePackage[english,brazilian]{babel}
-\input{docs/brazilian.babel}
-\input{docs/english.babel}
+\input{inputs/brazilian.babel}
+\input{inputs/english.babel}
 \if@english
         \selectlanguage{english}
         \AtBeginDocument{\selectlanguage{english}}
 \fi
 \RequirePackage{lastpage}
 \RequirePackage{indentfirst}
-\RequirePackage{styles/iidefs}
+\RequirePackage{inputs/iidefs}
 \RequirePackage{setspace}
 \RequirePackage{titlesec}
 \RequirePackage{fancyhdr}
 \RequirePackage[usenames,dvipsnames,svgnames,table]{xcolor}
-\RequirePackage[tocindentauto,tocfullflat]{styles/tocstyle}
+\RequirePackage[tocindentauto,tocfullflat]{inputs/tocstyle}
 \settocfeature[toc][0]{entryhook}{\bfseries\uppercase}
 \settocfeature[toc][1]{entryhook}{\bfseries}
 \settocstylefeature{pagenumberbox}{\pnbox}
@@ -135,7 +135,7 @@
     % não é o padrão do abntex2.
     abnt-emphasize=bf,
     bibjustif
-]{abntex2cite}
+]{inputs/abntex2cite}
 \fi
 
 % espaçamento entre as linhas
@@ -399,7 +399,7 @@
         }%
 }
 
-\AtEndOfClass{\input{docs/nominata.def}}
+\AtEndOfClass{\input{inputs/nominata.def}}
 \newcommand{\nominata}{
   \setstretch{0.95}
   \noindent\MakeUppercase{\ufrgs}
@@ -595,7 +595,7 @@
         %\vspace*{90pt}
         %\vspace{12pt}
         \reset@font{#2{\ii@chapterfont\textbf{\@chapapp\thechapter\hphantom{~}\@chapappextra\MakeUppercase{#1}}\par}}
-        \addvspace{\baselineskip}
+        \addmargin
         \noindent
         %\par
 }

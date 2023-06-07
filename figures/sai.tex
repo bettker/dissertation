@@ -1,0 +1,26 @@
+\begin{tikzpicture}[every node/.style={circle, draw}, node distance=23mm, minimum size=9mm]
+    \node (goal) {$s^*$};
+    \node[above right of=goal] (s1) {$s_1$};
+    \node[right of=goal] (s2) {$s_2$};
+    \node[below right of=goal] (s3) {$s_3$};
+    \node[right of=s1] (s4) {$s_4$};
+    \node[right of=s2] (s5) {$s_5$};
+    \node[right of=s3] (s6) {$s_6$};
+    \node[right of=s4] (s7) {$s_7$};
+    \node[right of=s5] (s8) {$s_8$};
+    \node[right of=s6] (s9) {$s_9$};
+    \node[right of=s9] (s10) {$s_{10}$};
+
+    \draw[-Straight Barb, color=royalred] (s1) to[bend right=5] (s2);
+    \draw[-Straight Barb, color=royalred] (s2) to (goal);
+    \draw[-Straight Barb, color=royalblue] (s2) to[bend left=5] (s6);
+    \draw[-Straight Barb, color=royalblue] (s3) to[bend left=5] (goal);
+    \draw[-Straight Barb, color=royalred] (s4) to (s1);
+    \draw[-Straight Barb, color=royalblue] (s5) to (s2);
+    \draw[-Straight Barb, color=royalblue] (s6) to (s3);
+    \draw[-Straight Barb, color=royalred] (s7) to (s4);
+    \draw[-Straight Barb, color=royalred] (s8) to[bend left=5] (s7);
+    \draw[-Straight Barb, color=royalblue] (s8) to[bend left=5] (s10);
+    \draw[-Straight Barb, color=royalblue] (s9) to[bend left=5] (s5);
+    \draw[-Straight Barb, color=royalblue] (s10) to (s9);
+\end{tikzpicture}

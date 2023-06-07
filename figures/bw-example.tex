@@ -1,0 +1,65 @@
+\begin{tikzpicture}
+    % goal
+    \node[align=center] at (1.2,-0.3) {($goal$)};
+    \drawCube{1}{0.5}{0}{blue}{0.5}
+    \drawCube{1}{1}{0}{green}{0.5}
+    \drawCube{1}{1.5}{0}{red}{0.5}
+    \node[align=center] at (2.6,1.2) {\facton{R}{G} \\
+        \facton{G}{B}};
+
+    % goal -> s1
+    \draw[->] (2.2,-1.5) to [bend right=10] (2,0.2);
+    \node[align=center] at (1.8,-3.7) {($s_1$)};
+    \drawCube{1.5}{-3}{0}{blue}{0.5}
+    \drawCube{2}{-3}{0}{red}{0.5}
+    \drawCube{1.5}{-2.5}{0}{green}{0.5}
+    \node[align=center] at (3.8,-2.6) {\factclear{G} \\
+        \facton{G}{B} \\
+        \factontable{R}};
+
+    % s1 -> s2
+    \draw[->] (5.4,-3.7) to [bend left=20] (3.5,-3.6);
+    \node[align=center] at (6.5,-4.2) {($s_2$)};
+    \drawCube{6}{-3.5}{0}{blue}{0.5}
+    \drawCube{6.5}{-3.5}{0}{red}{0.5}
+    \drawCube{7}{-3.5}{0}{green}{0.5}
+    \node[align=center] at (8.9,-3.1) {\factclear{G} \\
+        \factclear{B} \\
+        \factontable{R} \\
+        \factontable{G}};
+
+    % s1 -> s3
+    \draw[->] (4.5,0) to [bend right=20] (3.5,-1.5);
+    \node[align=center] at (5.3,-0.7) {($s_3$)};
+    \drawCube{5}{0}{0}{blue}{0.5}
+    \drawCube{5.5}{0}{0}{red}{0.5}
+    \drawCube{5.5}{0.5}{0}{green}{0.5}
+    \node[align=center] at (7.4,0.3) {\factclear{G} \\
+        \factclear{B} \\
+        \facton{G}{R} \\
+        \factontable{R}};
+
+    % s3 -> s4
+    \draw[->] (9.5,1.1) to
+     [bend right=20] (8.5,0.4);
+    \node[align=center] at (10.6,0.3) {($s_4$)};
+    \drawCube{10.1}{1}{0}{blue}{0.5}
+    \drawCube{10.6}{1}{0}{red}{0.5}
+    \drawCube{11.1}{1}{0}{green}{0.5}
+    \node[align=center] at (13,1.3) {\factclear{R} \\
+        \factclear{G} \\
+        \factclear{B} \\
+        \factontable{R} \\
+        \factontable{G}};
+
+    % s4 -> s5
+    \draw[->] (12.5,-1.1) to [bend right=20] (13,-0.2);
+    \node[align=center] at (11.8,-3.2) {($s_5$)};
+    \drawCube{11.5}{-2.5}{0}{green}{0.5}
+    \drawCube{12}{-2.5}{0}{red}{0.5}
+    \drawCube{11.5}{-2}{0}{blue}{0.5}
+    \node[align=center] at (14,-2.3) {\factclear{R} \\
+        \factclear{B} \\
+        \facton{B}{G} \\
+        \factontable{R}};
+\end{tikzpicture}
