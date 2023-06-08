@@ -3,23 +3,22 @@
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 \usepackage{times}
-% \usepackage{palatino}
-% \usepackage{mathptmx}
 \usepackage[alf,abnt-emphasize=bf]{inputs/abntex2cite}
 
-\usepackage[textsize=tiny,colorinlistoftodos,prependcaption]{todonotes}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
-\usepackage{enumitem}
-\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+\usepackage[linesnumbered,ruled,boxed,commentsnumbered]{algorithm2e}
+\usepackage[capitalize]{cleveref}
 \usepackage{booktabs}
+\usepackage{enumitem}
 \usepackage{listings}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta}
-\usepackage{xcolor}
-\usepackage[capitalize]{cleveref}
+\usepackage[textsize=tiny,colorinlistoftodos,prependcaption]{todonotes}
 
+\usetikzlibrary{arrows.meta}
+
+\input{inputs/formais.def} % this does not work in class options idk why
 \input{definitions}
 
 \title{Understanding Sample Generation Strategies for Learning Heuristic Functions in Classical Planning}
@@ -27,7 +26,7 @@
 
 \author{Bettker}{Rafael Vales}
 
-\advisor[Prof.~Dr.]{Pereira}{André Grahl}
+\advisor[Prof.~Dr.]{Pereira}{Andr{\'e} Grahl}
 \coadvisor[Prof.~Dr.]{Ritt}{Marcus}
 
 \date{June}{2023}
@@ -50,12 +49,12 @@
 
 \maketitle
 
-\input{chapters/pretextual/epigraph.tex}
-\input{chapters/pretextual/acknowledgments.tex}
+\input{chapters/pretextual/epigraph}
+\input{chapters/pretextual/acknowledgments}
 
-\input{chapters/0_abstract.tex}
+\input{chapters/0_abstract}
 
-\input{chapters/pretextual/abbreviations.tex}
+\input{chapters/pretextual/abbreviations}
 
 \listoffigures
 \listoftables
@@ -63,16 +62,16 @@
 
 \tableofcontents
 
-\input{chapters/1_introduction.tex}
-\input{chapters/2_background.tex}
-\input{chapters/3_sampling.tex}
-\input{chapters/4_experiments.tex}
-\input{chapters/5_limitations.tex}
-\input{chapters/6_conclusion.tex}
+\input{chapters/1_introduction}
+\input{chapters/2_background}
+\input{chapters/3_sampling}
+\input{chapters/4_experiments}
+\input{chapters/5_limitations}
+\input{chapters/6_conclusion}
 
 \bibliographystyle{inputs/abntex2-alf}
 \bibliography{bib/references.bib}
 
-\input{chapters/appendix.tex}
+\input{chapters/appendix}
 
 \end{document}

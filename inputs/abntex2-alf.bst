@@ -577,8 +577,8 @@ FUNCTION {format.names}
       bibinfo bibinfo.check
       't :=
       nameptr #1 >
-        {nameptr #1 #1 + = numnames abnt.etal.list > and
-            {abnt.etal.list {"others" 't := #1 'namesleft :=} 'skip$ if$ }
+        {nameptr #100 >
+          {"; et al." 't := #1 'numnames :=}
             'skip$
           if$
           namesleft #1 >
