@@ -12,7 +12,7 @@ We restrict our study to generalizing over planning tasks with initial states pa
 
 Unlike other domains in machine learning, such as image recognition or natural language processing, where datasets of samples are often collected in real-world experiments and subsequently need to be manually annotated and carefully curated, the task of sample generation in classical planning presents a distinct challenge. In contrast to the reliance on external data sources, classical planning leverages the structure and characteristics of the task domain. In this context, the generation of samples becomes an algorithmic problem that capitalizes on the availability of the state space and the ability to compute cost-to-goal estimates. This capability allows exploring various techniques using only computational resources.
 
-The algorithmic nature of sample generation in classical planning provides a systematic and controlled approach and enables the exploration of various sample distributions. Approaches from the literature to generate states generally revolve around three fundamental approaches: progression from one or more initial states, random sampling of the state space, or regression from the goal state.
+The algorithmic nature of sample generation in classical planning provides a systematic and controlled approach and enables the exploration of various sample distributions. Approaches from the literature to generate states generally revolve around three fundamental approaches: progression from one or more initial states, random sampling of the state space, or regression from a goal state.
 
 Both progression and regression involve starting from a state and systematically applying forward~(progression) or backward~(regression) operators to explore the state space. This iterative process gradually expands the set of generated states, effectively capturing the dynamics and potential paths within the task. Various expansion strategies can be used, such as random walks, BFS and DFS, or teacher searches, including ``on~policy'' searches using reinforcement learning or bootstrapping~\cite{arfaee2011learning}. Each strategy has its particularities and influences the coverage and exploration patterns of the generated states, impacting the overall diversity and representation of the sample set.
 
@@ -27,13 +27,13 @@ To generate samples, we expand the backward state space through regression. We a
 
 During expansion, we optionally use mutexes obtained from an analysis of the planning task -- in our case, as computed by Fast~Downward~\cite{helmert2006fast}~-- to discard partial states which cannot be completed to complete states without violating a mutex, as described in \cref{sec:state-completion}. We also discard repeated partial states for random walk rollouts, such that a single rollout never cycles. However, the same partial state can be sampled multiple times in different rollouts.
 
-Regression starts from the goal state~$s^*$ with the cost-to-goal estimate~$h(s^*)=0$. When applying a backward operator~$o$ to a state~$s$, the resulting state~$s' = \pred(s, o)$ receives a cost-to-goal estimate of $h(s') = h(s) + \text{cost}(o)$. For a state~$s$ generated during rollout that satisfies the goal condition, i.e.,~$s \subseteq s^*$, we set its cost-to-goal estimate to~$0$. States are added to the sample set when generated in the random walks and when expanded in BFS and DFS. In all methods, backward operators applicable to a state are applied in random order.
+Regression starts from the goal~$s^*$ with the cost-to-goal estimate~$h(s^*)=0$. When applying a backward operator~$o$ to a state~$s$, the resulting state~$s' = \pred(s, o)$ receives a cost-to-goal estimate of $h(s') = h(s) + \text{cost}(o)$. For a state~$s$ generated during rollout that satisfies the goal condition, i.e.,~$s \subseteq s^*$, we set its cost-to-goal estimate to~$0$. States are added to the sample set when generated in the random walks and when expanded in BFS and DFS. In all methods, backward operators applicable to a state are applied in random order.
 
 Using different expansion strategies and considering multiple rollouts, we aim to generate a diverse and representative sample set of the state space. Different expansion strategies generate sample sets with different distributions, i.e.,~varying frequencies of optimal distances from the goal. In our experience, good coverage of states close to the goal, such as those obtained by BFS or random walks, is useful, as is the greater depth obtained by DFS or random walks. However, random walks from the goal often sample states close to the goal multiple times, and DFS can lead to a concentration of distant samples from the goal. Based on these observations, we propose a novel combination of BFS and random walks called \bfsrw that aims to have a good coverage close to the goal and a diverse set of samples from the remaining state space.
 
 \bfsrw addresses the limitations of individual strategies by leveraging BFS for good coverage of states close to the goal and random walks for exploring distant regions. By strategically integrating these techniques, \bfsrw aims to achieve a balanced and comprehensive sampling of the state space. \cref{alg:fsm} presents the approach.
 
-\begin{algorithm}[ht]
+\begin{algorithm}[tb]
     \caption{FSM algorithm}
     \label{alg:fsm}
 
@@ -105,28 +105,28 @@ Let $Q$ be the states in $S$ that did not generate successors for the sample set
 \subsection{Maximum Regression Limit}
 \label{sec:rollout-limit}
 
-The maximum regression limit plays a crucial role in controlling the depth of state exploration during sample generation. This limit determines how far the sampling can deviate from the goal state during regression. For example, in random walk represents the maximum number of random steps that the algorithm takes in a rollout. In BFS or DFS, the maximum regression limit corresponds to the maximum depth level that can be reached.
+The maximum regression limit plays a crucial role in controlling the depth of state exploration during sample generation. This limit determines how far the sampling can deviate from the goal during regression. For example, in random walk represents the maximum number of random steps that the algorithm takes in a rollout. In BFS or DFS, the maximum regression limit corresponds to the maximum depth level that can be reached.
 
-This limit serves two main objectives. First, particularly in regression-based methods, it helps maintain the precision of the cost-to-goal estimate, which is determined by the distance from the goal state that the sample was generated and tends to degrade during sampling due to the random nature of algorithms such as random walk or DFS. Secondly, it regulates the distribution of samples by periodically restarting the sampling, effectively distributing them across the different distances from the goal state.
+This limit serves two main objectives. First, particularly in regression-based methods, it helps maintain the precision of the cost-to-goal estimate, which is determined by the distance from the goal state that the sample was generated and tends to degrade during sampling due to the random nature of algorithms such as random walk or DFS. Secondly, it regulates the distribution of samples by periodically restarting the sampling, effectively distributing them across the different distances from the goal.
 
-By establishing an appropriate maximum regression limit, we can balance exploration of the state space and precision in the cost-to-goal estimates. If the limit is too low, the sampling may fail to cover areas far from the goal state, typically where the initial states of a search reside, resulting in a sample set lacking information from these regions. On the other hand, if the limit is excessively large, the sampling may extend too far from the goal state, compromising the confidence in the accuracy of the cost-to-goal estimates.
+By establishing an appropriate maximum regression limit, we can balance exploration of the state space and precision in the cost-to-goal estimates. If the limit is too low, the sampling may fail to cover areas far from the goal, typically where the initial states of a search reside, resulting in a sample set lacking information from these regions. On the other hand, if the limit is excessively large, the sampling may extend too far from the goal, compromising the confidence in the accuracy of the cost-to-goal estimates.
 
 A simple strategy is to define some maximum limit, denoted as~$L$. This has been used in previous work, e.g.,~by \citet{yu2020learning} and \citet{otoole2022sampling} with $L=200$ and $L=500$, respectively. A fixed limit is not the optimal choice for tasks with state spaces of different diameters or different maximum distances to a fixed goal when we aim for a representative sample of the state space.
 
 To address this challenge, it is necessary to use adaptive strategies that dynamically adjust the maximum rollout limit based on the characteristics of the state space. This adaptability ensures that the sampling can accommodate variations in the diameter of the state space and the maximum distance to the goal, facilitating the generation of a representative sample set that encompasses regions of the entire state space.
 
-The most effective regression limit for a fixed goal should be defined as a function of the state space diameter, i.e.,~longest distance \ssdiameter from the goal state to any other potential initial state. For BFS, \ssdiameter would be the ideal estimate; for DFS and random walks, higher limits are required since they do not follow the shortest paths. Since \ssdiameter, in general, is unknown, a potential solution is to estimate this value using available or domain-specific information.
+The most effective regression limit for a fixed goal should be defined as a function of the state space diameter, i.e.,~longest distance \ssdiameter from a goal state to any other potential initial state. For BFS, \ssdiameter would be the ideal estimate; for DFS and random walks, higher limits are required since they do not follow the shortest paths. Since \ssdiameter, in general, is unknown, a potential solution is to estimate this value using available or domain-specific information.
 
 We propose two adaptive and approximated methods to define a suitable maximum regression limit based on the input task parameters. The first method, model-free, is the number of facts in the task~$F=|\mathcal{F}(s_0)|$. This approach provides an estimate that assumes that if at least one fact is changed at each step, the worst-case scenario, requiring a change in all facts, would take \facts~steps.
 
-The second method, on the other hand, is model-based and defined as~$$\bar F=\ceil{\frac{F}{\sum_{o\in \mathcal{O}} \frac{|\eff(o)|}{|\mathcal{O}|}}},$$ i.e.,~the number of facts per mean number of effects in the operators. This technique generates an approximate estimate of the diameter of the state space, considering that, in the worst case, we need to set all propositions of a state to reach the goal state. We can set, on average, the mean number of effects in the operators per given step, so we need to take \meanfx~steps to traverse the state space.
+The second method, on the other hand, is model-based and defined as~$$\bar F=\ceil{\frac{F}{\sum_{o\in \mathcal{O}} \frac{|\eff(o)|}{|\mathcal{O}|}}},$$ i.e.,~the number of facts per mean number of effects in the operators. This technique generates an approximate estimate of the diameter of the state space, considering that, in the worst case, we need to set all propositions of a state to reach the goal. We can set, on average, the mean number of effects in the operators per given step, so we need to take \meanfx~steps to traverse the state space.
 
 Using these adaptive and approximated methods, we can define the maximum regression limit based on the characteristics of each planning task. The model-free method offers a simple yet effective estimation, while the model-based one provides a more nuanced approximation.
 
 \subsection{State Completion}
 \label{sec:state-completion}
 
-The goal state is represented as a partial state, consisting of a subset of facts of a complete state that needs to be satisfied to reach the desired solution. Therefore, sampling by regression generates a set of partial states. Since NNs rely on complete states as input during the search, it becomes necessary to perform state completion, which involves assigning values to the undefined variables in the partial states.
+The goal is represented as a partial state, consisting of a subset of facts of a complete state that needs to be satisfied to reach the desired solution. Therefore, sampling by regression generates a set of partial states. Since NNs rely on complete states as input during the search, it becomes necessary to perform state completion, which involves assigning values to the undefined variables in the partial states.
 
 We present three approaches to complete a partial state. The first one involves random assignment, where each partial state can be completed by assigning a value~$s(v) \in \dom(v)$ to all fact pairs~$(v,s(v))$ where $s(v)=\bot$. This completion strategy, which relies solely on the available domain values without making additional assumptions, can be considered a model-free approach.
 
@@ -171,7 +171,7 @@ SAI aims to improve the consistency and reliability of the training data by sele
 
 For all sampled states~$s$ we update each cost-to-goal estimate to the best estimate~$h(s) = \min\{h_i \mid s=s_i, i\in[N]\}$. Since different partial states can generate identical complete states, the improvement is applied to partial and complete states. Choosing the minimum \h-value is sound since, in all cases, we have valid plans from a regression that witness these distances; for the same reason, \cref{prop:hvalue} still holds.
 
-\begin{figure}[ht]
+\begin{figure}[tb]
     \caption[SAI technique applied on samples of random walk rollouts.]{SAI technique applied on samples of two random walk rollouts. Each node represents a state, and each arc is an applicable operator. Each rollout has a color, and its operators are colored accordingly.}
     \label{fig:sai}
     \addmargin
@@ -179,7 +179,7 @@ For all sampled states~$s$ we update each cost-to-goal estimate to the best esti
     \input{figures/sai}
 \end{figure}
 
-\cref{fig:sai} presents the technique applied to sampling from random walks. Both rollouts generate the state~$s_2$ but through different paths. While the red rollout reaches with a distance of $1$ from the goal state~$s^*$, the blue rollout generates $s_2$ after $3$~hops. Consequently, we have two samples $(s_2,1)$ and $(s_2,3)$. Applying the SAI technique, we update the cost-to-goal estimate~$h(s_2)$ of both samples to $min(1,3)=1$. The same process is applied to samples of state~$s8$, which receives $h(s_8)=min(5,7)=5$.
+\cref{fig:sai} presents the technique applied to sampling from random walks. Both rollouts generate the state~$s_2$ but through different paths. While the red rollout reaches with a distance of $1$ from the goal state~$s^*$, the blue rollout generates $s_2$ after $3$~hops. Consequently, we have two samples $(s_2,1)$ and $(s_2,3)$. Applying the SAI technique, we update the cost-to-goal estimate~$h(s_2)$ of both samples to $min(1,3)=1$. The same process is applied to samples of state~$s_8$, which receives $h(s_8)=min(5,7)=5$.
 
 \subsection{Improvement over Successors}
 \label{sec:sui}
@@ -188,7 +188,7 @@ In addition to sampling the same states in different rollouts, it is also common
 
 SUI takes advantage of the fact that neighboring samples, with one distance operator, can be connected by this operator to form a new path to the goal and, consequently, a new cost-to-goal estimate. We can update the corresponding cost-to-goal estimate to approximate \hstar if it produces a shorter path than the current one. Note that although it is possible to expand the technique to neighbors of two or more distance operators, the computational cost grows exponentially.
 
-\begin{algorithm}[ht]
+\begin{algorithm}[tb]
     \caption{SUI algorithm}
     \label{alg:sui}
 
@@ -238,9 +238,9 @@ SUI takes advantage of the fact that neighboring samples, with one distance oper
 
 The method is detailed in \cref{alg:sui}. Consider a directed and labeled graph~$G=(V,A)$ where each vertex in $V$ corresponds to a sampled state and is labeled by its lowest cost-to-goal estimate~(line~10). We insert an arc~$(s,t)$ into $A$ for every pair of states~$s,t \in V$ such that $t \in \sucs(s)$, meaning that we need to compute the successors of each sampled state and check if they are in the sample set. When generating a successor of a partial state, we typically generate another partial state. Since a partial state represents a set of complete states, to determine if a successor~$s' \in \sucs(s)$ matches any sampled state~$t$, we need to compute the subsets of $t$. For this, we maintain a trie data structure, where each sampled state is inserted with its variable values as key. When generating a successor~$s'$~(line~6), we search the trie for sampled states~$t$ that are supersets of $s'$. Thus, $s$ generates $t$ from applying an operator and assigning zero or more undefined variables, so we add an arc~$(s,t)$ to $A$~(line~7). To simplify, the algorithm assumes a unit cost domain; for non-unit cost domains, the cost to generate~$s'$ must be stored in the arc~(line~7) and used to update the h-values~(line~15-16).
 
-The second loop~(line~12) propagates the value of the cost-to-goal estimate through all possible paths in~$G$, updating the value of the neighbors~-- which in the next iteration can update the estimate of their neighbors and so on. For partial states generated by regression, by construction, at least one successor exists, except for the goal state~$s^*$. Therefore, in the worst case, the algorithm will make $L$ iterations, propagating the cost-to-goal estimate of the goal state to the most distant node, working similarly to Dijkstra's Algorithm. As for SAI, all distances are witnessed by plans, so \cref{prop:hvalue} is maintained.
+The second loop~(line~12) propagates the value of the cost-to-goal estimate through all possible paths in~$G$, updating the value of the neighbors~-- which in the next iteration can update the estimate of their neighbors and so on. For partial states generated by regression, by construction, at least one successor exists, except for the goal~$s^*$. Therefore, in the worst case, the algorithm will make $L$ iterations, propagating the cost-to-goal estimate of a goal state to the most distant node, working similarly to Dijkstra's Algorithm. As for SAI, all distances are witnessed by plans, so \cref{prop:hvalue} is maintained.
 
-\begin{figure}[ht]
+\begin{figure}[tb]
     \caption[SUI technique applied on samples of random walk rollouts.]{SUI technique applied on samples of two random walk rollouts. Each node represents a state, and each arc is an applicable operator. Each rollout has a color, and its operators are colored accordingly.}
     \label{fig:sui}
     \addmargin
@@ -248,14 +248,14 @@ The second loop~(line~12) propagates the value of the cost-to-goal estimate thro
     \input{figures/sui}
 \end{figure}
 
-\cref{fig:sui} shows an example of the technique. The rollouts do not overlap but intersect at a distance of one operator between states $s_1$ and $s_4$. This information is discovered by inserting the black arcs into the graph~$G$, which were not previously used by the sampling. From there, we can connect these states to generate a new path from $s_4$ to the goal that is shorter than its current one, updating its cost-to-goal estimate from $4$ to $h(s_1)+1=1+1=2$, according to the new path. Now, $s_4$ can update the estimate of its neighbors in the next iteration. Thus, all states generated in the rollout after $s_4$ will be updated. Therefore, although the neighborhood between states is more commonly close to the goal state, distant states benefit from the propagation of updates.
+\cref{fig:sui} shows an example of the technique. The rollouts do not overlap but intersect at a distance of one operator between states $s_1$ and $s_4$. This information is discovered by inserting the black arcs into the graph~$G$, which were not previously used by the sampling. From there, we can connect these states to generate a new path from $s_4$ to the goal that is shorter than its current one, updating its cost-to-goal estimate from $4$ to $h(s_1)+1=1+1=2$, according to the new path. Now, $s_4$ can update the estimate of its neighbors in the next iteration. Thus, all states generated in the rollout after $s_4$ will be updated. Therefore, although the neighborhood between states is more commonly close to a goal state, distant states benefit from the propagation of updates.
 
 \section{Workflow}
 \label{sec:workflow}
 
 Our approach follows the workflow shown in \cref{fig:workflow}.
 
-\begin{figure}[ht]
+\begin{figure}[tb]
     \caption{Sample generation workflow.}
     \label{fig:workflow}
     \addmargin
@@ -270,7 +270,7 @@ Then, we use random sampling to generate new complete states for the sample set.
 
 Overall, this workflow applies a series of transformations to the sample set. Each step contributes to improving the distribution of samples over the state space or refining their cost-to-goal estimates, both key factors for enhancing the quality of the sample set. Finally, the preprocessed sample set is used in the supervised learning phase, independent of this workflow, to train a heuristic function.
 
-\begin{figure}[ht]
+\begin{figure}[tb]
     \caption[An example of the sampling in the Blocks World.]{An example of the sampling in the Blocks World. Each set of blocks corresponds to a state, with its facts described on the side and its label below.}
     \label{fig:example}
     \addmargin
