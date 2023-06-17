@@ -61,7 +61,6 @@ Using different expansion strategies and considering multiple rollouts, we aim t
 
     \SetKwFunction{FSM}{FSM}
     \Fn{\FSM{\bfspct, \initstate, \L}}{
-        \tcp{Let $h$ be the mapping from sampled states to cost-to-goal estimates.}
         $\S \gets \{\initstate\}$ \\
         $\O \gets \{\initstate\}$ \\
         $\Di \gets \{\initstate\}$ \tcp*[h]{current layer} \\
@@ -86,7 +85,7 @@ Using different expansion strategies and considering multiple rollouts, we aim t
         \While{$\lvert \S \rvert < \N$}{
             Shuffles \O with a uniform distribution \\
             \ForEach{$\s \in \O$}{
-                $\Srw \gets$ set of $\min(\L - h[\s], \N - \lvert \S \rvert)$ states sampled via RW starting from $\s$ \\
+                $\Srw \gets$ set of $\min(\L - \hstar(\s), \N - \lvert \S \rvert)$ states sampled via RW starting from $\s$ \\
                 $\S \gets \S \cup \Srw$ \\
                 \lIf{$\lvert \S \rvert = \N$}{break}
             }
@@ -94,18 +93,16 @@ Using different expansion strategies and considering multiple rollouts, we aim t
 
         \Return \S \\
     }
-    \mri{(line 25) Why? This doesn't make sense: $L$ is a limit for $h$, but sampling $L-h(s)$ never reaches it.}
-    \rvi{$L$ is the limit for FSM. $h(s)$ is what has already been sampled by BFS, so that leaves $L-h(s)$ to sample by RW.}
 \end{algorithm}
 
 FSM has two phases. In the first phase, a fixed percentage~$p_\bfsrw$ of the desired $N$~samples is generated using BFS. The value of $p_\bfsrw$ also serves as a constraint on computational resources, and the BFS process terminates when either the desired number of samples or the resource limit is reached first. \bfs expands a state from layer~$k$ and generates $n$~states from layer~$k+1$~(line~11). Each generated state is inserted into the sample set~$S$ if the current total samples plus $n$ are within $p_{\bfsrw}N$ samples; otherwise, no states are sampled, and \bfs expands another state. When expanding an entire layer, the algorithm moves to the next layer.
 
-Let $Q$ be the states in $S$ that did not generate successors for the sample set, i.e.,~they were not expanded, or their set of successors did not fit. The second phase generates multiple random walk rollouts, each starting from a state in $Q$ chosen randomly with a complete replacement after all states have been selected once. This is repeated until reaching $N$~samples in the sample set. During a random walk, states sampled in the BFS phase are avoided. This approach is compared to traditional ones in Sub\cref{sec:small-exps-distribution}.
+Let $Q$ be the states in $S$ that did not generate successors for the sample set, i.e.,~they were not expanded, or their set of successors did not fit. The second phase generates multiple random walk rollouts, each starting from a state $s \in Q$ chosen randomly with a complete replacement after all states have been selected once. Each rollout samples $L-\hstar(s)$ states, where $L$ is the maximum regression limit and $\hstar(s)$ is the distance already traversed by BFS. This is repeated until reaching $N$~samples in the sample set. During a random walk, states sampled in the BFS phase are avoided. This approach is compared to traditional ones in \cref{sec:small-exps-distribution}.
 
 \subsection{Maximum Regression Limit}
 \label{sec:rollout-limit}
 
-The maximum regression limit controls the depth of the rollout during sample generation. This limit determines how far the sampling can deviate from the goal during regression. For example, the regression limit in random walk represents the maximum number of random steps the algorithm takes in a rollout. In BFS or DFS, the maximum regression limit corresponds to the maximum depth level that can be reached\mri{No, it doesn't}\rvi{Why? That's how it is.}.
+The maximum regression limit controls the depth of the rollout during sample generation. This limit determines how far the sampling can deviate from the goal during regression. In random walk, the regression limit is represented by the maximum length (number of random steps) the algorithm can take in a rollout. In BFS or DFS, the maximum regression limit corresponds to the maximum depth (distance from the goal) that can be reached.
 
 This limit serves two main objectives. First, particularly in regression-based methods, it helps maintain the precision of the cost-to-goal estimate, which is determined by the distance from the goal state that the sample was generated and tends to degrade during sampling due to the random nature of algorithms such as random walk or DFS. Second, it regulates the distribution of samples by periodically restarting the sampling, effectively distributing them across the different distances from the goal.
 
@@ -128,9 +125,9 @@ The goal condition is represented as a partial state, consisting of a subset of 
 
 We introduce three approaches to complete a partial state. The first one is a random assignment, where each partial state can be completed by assigning a value~$s(v) \in \dom(v)$ to all fact pairs~$(v,s(v))$ where $s(v)=\bot$. This completion strategy is model-free since it relies solely on the available domain values without making additional assumptions.
 
-The second method is model-based and uses mutexes to generate complete states more similar to those encountered during the search\mri{How do you know?}\rvi{The only way I think it's not more similar is if there are no mutexes in the domain. Otherwise, mutexes will produce states more similar to true states than random completion (the purpose of the mutex is exactly that)} than the ones produced by the first approach. This method also assigns a random value~$s(v) \in \dom(v)$ to each undefined variable~$v$ but excludes states that do not satisfy mutexes. This is achieved by rejection sampling, where the undefined variables are processed in random order and set to a random value that does not violate the mutexes. If the state cannot be completed, we leave the facts undefined, i.e.,~set to false. By using the mutex information, we generate states more consistent with those in the FSS, enhancing the quality of the training data provided to the NN.
+The second method is mutex-based and aims to avoid states that are impossible to reach during the search. It also assigns a random value~$s(v) \in \dom(v)$ to each undefined variable~$v$ but excludes states that do not satisfy mutexes. This is achieved by rejection sampling, where the undefined variables are processed in random order and set to a random value that does not violate the mutexes. If the state cannot be completed, we leave the facts undefined, i.e.,~set to false. By using the mutex information, we generate states more consistent with those in the FSS, enhancing the quality of the training data provided to the NN.
 
-While this model-based solution using mutexes provides enhanced state completion, generating invalid states or states that cannot be reached during the search is still possible. We introduce an ideal state completion method to investigate the influence of generating only those states that are reachable from the initial states of interest. This method aims to produce a sample set that is highly relevant to the specific task. To complete a partial state~$s$, we sample a random state from $s~\cap$~FSS. Since we sample by regression, for some states, $s~\cap$~FSS may be empty; such states are avoided during regression. However, it is important to note that this method applies only to small tasks where we can enumerate the complete FSS of the initial state~$s_0$.
+While this mutex-based solution provides enhanced state completion, generating invalid states or states that cannot be reached during the search is still possible. We introduce an ideal state completion method to investigate the influence of generating only those states that are reachable from the initial states of interest. This method aims to produce a sample set that is highly relevant to the specific task. To complete a partial state~$s$, we sample a random state from $s~\cap$~FSS. Since we sample by regression, for some states, $s~\cap$~FSS may be empty; such states are avoided during regression. However, it is important to note that this method applies only to small tasks where we can enumerate the complete FSS of the initial state~$s_0$.
 
 By using additional information and making more informed decisions during the state completion, we can investigate the gain it can have on the learning of the NN.
 
@@ -144,7 +141,7 @@ We use this method to investigate the influence of randomly generated samples on
 \section{Improving Cost-to-Goal Estimates}
 \label{sec:cost-to-goal-estimates}
 
-The cost-to-goal estimate's accuracy also influences the quality of the sample set. To improve the cost-to-goal estimate, the objective is to approximate the actual goal distance~\hstar\mri{No it's not. If you are 10 below \hstar, 5 above is better.}\rvi{10 below to 5 above is approximation (from 10 to 5); is what it says, so why "no it's not?"}. Our sampling approach ensures that the cost-to-goal estimates assigned to the samples are based on the operators used to reach that particular state. Thus, we guarantee that a sample never underestimates \hstar.
+The cost-to-goal estimate's accuracy also influences the quality of the sample set. To improve the cost-to-goal estimate, the objective is to reduce the difference from the actual goal distance~\hstar. Our sampling approach ensures that the cost-to-goal estimates assigned to the samples are based on the operators used to reach that particular state. Thus, we guarantee that a sample never underestimates \hstar.
 
 \begin{property}
     \label{prop:hvalue}
@@ -159,9 +156,9 @@ Therefore, we apply two procedures that improve the cost-to-goal estimates but m
 \subsection{Improvement of Repeated Samples}
 \label{sec:sai}
 
-When generating samples through multiple rollouts, there is a possibility of overlap, where the same state could appear at different distances across different rollouts, leading to varying cost-to-goal estimates. When training the NN, different labels for the same sample can result in inconsistency and affect learning. To address this issue and improve the quality of cost-to-goal estimates, we propose Sample Improvement (SAI)\mr{underlined}.
+When generating samples through multiple rollouts, there is a possibility of overlap, where the same state could appear at different distances across different rollouts, leading to varying cost-to-goal estimates. When training the NN, different labels for the same sample can result in inconsistency and affect learning. To address this issue and improve the quality of cost-to-goal estimates, we propose Sample Improvement (SAI).
 
-SAI aims to improve the consistency and reliability\mri{no it doesn't}\rvi{It is more reliable than the post-SAI h-values are correct than those before the SAI. As well as consistent since multiple h-values for the same state is inconsistent.} of the training data by selecting a single cost-to-goal estimate for each unique state. \cref{prop:hvalue} guarantees that no sampled cost-to-goal estimate underestimates the actual goal distance~\hstar, so the lower the value, the closer it is to \hstar. Therefore, we choose the sample with the lowest cost-to-goal estimate to represent each particular state.
+SAI aims to improve the consistency of the training data by selecting a single cost-to-goal estimate for each unique state. \cref{prop:hvalue} guarantees that no sampled cost-to-goal estimate underestimates the actual goal distance~\hstar, so the lower the value, the closer it is to \hstar. Therefore, we choose the sample with the lowest cost-to-goal estimate to represent each particular state.
 
 For all sampled states~$s$ we update each cost-to-goal estimate to the best estimate~$h(s) = \min\{h_i \mid s=s_i, i\in[N]\}$. Since different partial states can generate identical complete states, the improvement is applied to partial and complete states. Choosing the minimum \h-value is sound since, in all cases, we have valid plans from a regression that witness these distances; for the same reason, \cref{prop:hvalue} still holds.
 
@@ -173,68 +170,67 @@ For all sampled states~$s$ we update each cost-to-goal estimate to the best esti
     \input{figures/sai}
 \end{figure}
 
-\cref{fig:sai} presents the technique applied to sampling from random walks. Both rollouts generate the state~$s_2$ but through different paths. The red rollout reaches it with a distance of $1$ from the goal state~$s^*$, and the blue rollout generates $s_2$ after $3$~hops. Consequently, we have two samples $(s_2,1)$ and $(s_2,3)$. Applying the SAI technique, we update the cost-to-goal estimate~$h(s_2)$ of both samples to $\min(1,3)=1$. The same process is applied to samples of state~$s_8$\mr{circled}, which receives $h(s_8)=\min(5,7)=5$.
+\cref{fig:sai} presents the technique applied to sampling from random walks. Both rollouts generate the state~$s_2$ but through different paths. The red rollout reaches it with a distance of $1$ from the goal state~$s^*$, and the blue rollout generates $s_2$ after $3$~hops. Consequently, we have two samples $(s_2,1)$ and $(s_2,3)$. Applying the SAI technique, we update the cost-to-goal estimate~$h(s_2)$ of both samples to $\min(1,3)=1$. The same process is applied to samples of state~$s_8$, which receives $h(s_8)=\min(5,7)=5$.
 
 \subsection{Improvement over Successors}
 \label{sec:sui}
 
 In addition to sampling the same states in different rollouts, it is common to sample states neighbors in the state space. This is more frequent in states at the beginning of the rollout. By sampling neighboring states, we can use the local information to enhance the accuracy of the cost-to-goal estimates. For this, we propose a technique called Successor Improvement (SUI).
 
-SUI uses the fact that neighboring samples, distant by an operator, can be connected by this operator to form a new path to the goal and, consequently, a new cost-to-goal estimate. We can update the corresponding cost-to-goal estimate to approximate \hstar if it produces a shorter path than the current one. Note that although it is possible to expand the technique to neighbors of two or more distance operators, the computational cost grows exponentially\mri{No, why?}\rvi{With $N$ states and on average $O$ applicable operators per state, the $X$-steps SUI needs to apply $(N \times O)^X$ operators < wrong}.
+SUI uses the fact that neighboring samples, distant by an operator, can be connected by this operator to form a new path to the goal and, consequently, a new cost-to-goal estimate. We can update the corresponding cost-to-goal estimate to approximate \hstar if it produces a shorter path than the current one. Note that although it is possible to expand the technique to neighbors of two or more distance operators, the computational cost grows exponentially with the average number of successors per sampled state.
 
-\begin{algorithm}[tb]
-    \caption{SUI algorithm}
-    \label{alg:sui}
+% \begin{algorithm}[tb]
+%     \caption{SUI algorithm}
+%     \label{alg:sui}
 
-    \SetAlgoLined
-    \SetKwData{S}{S}
-    \SetKwData{s}{s}
-    \SetKwData{sp}{s'}
-    \SetKwData{su}{s'}
-    \SetKwData{t}{t}
-    \SetKwData{Ms}{A}
-    \SetKwData{Mh}{V}
+%     \SetAlgoLined
+%     \SetKwData{S}{S}
+%     \SetKwData{s}{s}
+%     \SetKwData{sp}{s'}
+%     \SetKwData{su}{s'}
+%     \SetKwData{t}{t}
+%     \SetKwData{Ms}{A}
+%     \SetKwData{Mh}{V}
 
-    \KwData{
-        \S: the sample set
-    }
-    \KwResult{\S: the updated sample set}
-    \SetKwProg{Fn}{Function}{:}{}
+%     \KwData{
+%         \S: the sample set
+%     }
+%     \KwResult{\S: the updated sample set}
+%     \SetKwProg{Fn}{Function}{:}{}
 
-    \SetKwFunction{SUI}{SUI}
-    \Fn{\SUI{\S}}{
-        \tcp{Let $h$ be the mapping from sampled states to cost-to-goal estimates.}
-        $\Mh \gets \emptyset$ \tcp*[h]{mapping from state to integer} \\
-        $\Ms \gets \emptyset$ \tcp*[h]{mapping from state to list of states} \\
-        \ForEach{$\s \in \S$}{
-            \If{$\s \notin \Ms$}{
-                \ForEach{$\sp \in \sucs(\s)$}{
-                    $\Ms[\s] \gets \Ms[\s] \cup \{\t \mid \t \in \S\ \textnormal{\textbf{and}}\ \t \subseteq \sp\}$
-                }
-            }
-            $\Mh[\s] \gets \min(\Mh[\s], h[\s])$ \\
-        }
+%     \SetKwFunction{SUI}{SUI}
+%     \Fn{\SUI{\S}}{
+%         \tcp{Let $h$ be the mapping from sampled states to cost-to-goal estimates.}
+%         $\Mh \gets \emptyset$ \tcp*[h]{mapping from state to integer} \\
+%         $\Ms \gets \emptyset$ \tcp*[h]{mapping from state to list of states} \\
+%         \ForEach{$\s \in \S$}{
+%             \If{$\s \notin \Ms$}{
+%                 \ForEach{$\sp \in \sucs(\s)$}{
+%                     $\Ms[\s] \gets \Ms[\s] \cup \{\t \mid \t \in \S\ \textnormal{\textbf{and}}\ \t \subseteq \sp\}$
+%                 }
+%             }
+%             $\Mh[\s] \gets \min(\Mh[\s], h[\s])$ \\
+%         }
 
-        \Repeat{no \h-value update}{
-            \ForEach{$\s \in \Ms$}{
-                \ForEach{$\t \in \Ms[\s]$}{
-                    \If{$\Mh[\s] > \Mh[\t] + 1$}{
-                        $\Mh[\s] \gets \Mh[\t] + 1$ \\
-                        $h[\s] \gets \Mh[\s]$
-                    }
-                }
-            }
-        }
+%         \Repeat{no \h-value update}{
+%             \ForEach{$\s \in \Ms$}{
+%                 \ForEach{$\t \in \Ms[\s]$}{
+%                     \If{$\Mh[\s] > \Mh[\t] + 1$}{
+%                         $\Mh[\s] \gets \Mh[\t] + 1$ \\
+%                         $h[\s] \gets \Mh[\s]$
+%                     }
+%                 }
+%             }
+%         }
 
-        \Return \S \\
-    }
-    \mri{(lines 3-4) ??? Meaning?}
-    \rvi{It is written in the text: the vertices V and arcs A of the graph G.}
-\end{algorithm}
+%         \Return \S \\
+%     }
+% \end{algorithm}
 
-The method is detailed in \cref{alg:sui}. Consider a directed and labeled graph~$G=(V,A)$ where each vertex in $V$ corresponds to a sampled state and is labeled by its lowest cost-to-goal estimate~(line~10). We insert an arc~$(s,t)$ into $A$ for every pair of states~$s,t \in V$ such that $t \in \sucs(s)$, meaning that we need to compute the successors of each sampled state and check if they are in the sample set. When generating a successor of a partial state, we typically generate another partial state. Since a partial state represents a set of complete states, to determine if a successor~$s' \in \sucs(s)$ matches any sampled state~$t$, we need to compute the subsets of $t$. For this, we maintain a trie data structure, where each sampled state is inserted with its variable values as key. When generating a successor~$s'$~(line~6), we search the trie for sampled states~$t$ supersets of $s'$. Thus, $s$ generates $t$ from applying an operator and assigning zero or more undefined variables, so we add an arc~$(s,t)$ to $A$~(line~7). To simplify, the algorithm assumes a unit cost domain; for non-unit cost domains, the cost to generate~$s'$ must be stored in the arc~(line~7) and used to update the h-values~(line~15-16).
+% The method is detailed in \cref{alg:sui}. 
+Consider a directed, weighted, and labeled graph~$G=(V,A)$ where each vertex in $V$ corresponds to a sampled state and is labeled by its lowest cost-to-goal estimate. We insert an arc~$(s,t)$ into $A$ for every pair of states~$s,t \in V$ such that $t \in \sucs(s)$. When generating a successor of a partial state, we typically generate another partial state. Since a partial state represents a set of complete states, to determine if a successor~$s' \in \sucs(s)$ matches any sampled state~$t$, we need to compute the subsets of $t$. For this, we maintain a trie data structure, where each sampled state is inserted with its variable values as key. When generating a successor~$s'$, we search the trie for sampled states~$t$ supersets of $s'$. Thus, $s$ generates $t$ from applying an operator $o$ and assigning zero or more undefined variables. Consequently, we can include an arc $(s, t)$ in~$A$ with a weight~$c_{s,t} = \text{cost}(o)$.
 
-The second loop~(line~12) propagates the value of the cost-to-goal estimate through all possible paths in~$G$\mri{What? No!}\rvi{With each iteration the update propagates to one more state. E.g., if a certain rollout sampled 20 states, and the h-value of the 10th was updated, then in the next iteration it updates the 11th, and so on until the 20th. The example in the next section shows this.}, updating the value of the neighbors~-- which in the next iteration can update the estimate of their neighbors, and so on. For partial states generated by regression, by construction, at least one successor exists, except for the goal~$s^*$. Therefore, in the worst case, the algorithm will make $L$ iterations, propagating the cost-to-goal estimate of a goal state to the most distant node, similarly to a reverse Dijkstra's Algorithm from the goal. On the other hand, the SUI computes the value of all nodes simultaneously instead of one per iteration, and the nodes are not closed\rv{Is it ok or is it different enough not to be compared to Dijkstra?}. As for SAI, all distances are witnessed by plans, so \cref{prop:hvalue} is maintained.
+Using the graph $G$, we propagate the cost-to-goal estimate from each sampled state to its sampled predecessors. We iterate over each arc $(s,t) \in A$ and update the cost-to-goal estimate $h(s) = \min(h(s), h(t)+c_{s,t})$. The process continues as long as there are updates. For partial states generated by regression, by construction, at least one successor exists, except for the goal~$s^*$. Therefore, in the worst case, the algorithm will make $L$ iterations, propagating the cost-to-goal estimate of a goal state to the most distant state. As for SAI, all distances are witnessed by plans, so \cref{prop:hvalue} is maintained.
 
 \begin{figure}[tb]
     \caption[SUI technique applied to samples of a random walk rollout.]{SUI technique applied on samples of a random walk rollout (red arches). Each node represents a state, and each arc is an applicable operator.}
@@ -244,7 +240,7 @@ The second loop~(line~12) propagates the value of the cost-to-goal estimate thro
     \input{figures/sui}
 \end{figure}
 
-\cref{fig:sui} shows an example of the technique. The rollout does not overlap but intersects at a distance of one operator between states $s_1$ and $s_3$. This information is discovered by inserting the black arcs into the graph~$G$, which are operators that were not previously used by the sampling. From there, we can connect these states to generate a new path from $s_3$ to the goal that is shorter than the one produced by the rollout, updating its cost-to-goal estimate from $4$ to $h(s_1)+1=1+1=2$, according to the new path. Now, $s_3$ can update the estimate of its neighbors in the next iteration. Thus, all states generated in the rollout after $s_3$ will be updated. Therefore, although the neighborhood between states is more commonly close to a goal state\mri{Why? how do you know? Statistics? Data?}\rvi{The coverage of the state space near the goal is greater because of the multiple RWs. If there are more nearby states, there is more chance of neighboring states. We claim this in both papers without statistical data, but if it's necessary here, I can generate it.}, distant states benefit from the propagation of updates.
+\cref{fig:sui} shows an example of the technique. The rollout does not overlap but intersects at a distance of one operator between states $s_1$ and $s_3$. This information is discovered by inserting the black arcs into the graph~$G$, which are operators that were not previously used by the sampling. From there, we can connect these states to generate a new path from $s_3$ to the goal that is shorter than the one produced by the rollout, updating its cost-to-goal estimate from $4$ to $h(s_1)+1=1+1=2$, according to the new path. Now, $s_3$ can update the estimate of its neighbors in the next iteration. Thus, all states generated in the rollout after $s_3$ will be updated. Therefore, although distant states from the goal have fewer neighbors compared to those near the goal, their cost-to-goal estimates are updated through the rollout propagation.
 
 \section{Workflow}
 \label{sec:workflow}
@@ -264,7 +260,7 @@ After obtaining the sample set, the first step of sample processing is to apply 
 The SUI is the last step, where the samples are treated as partial states. Next, the undefined values of each sample are assigned according to the chosen state completion technique, resulting in a sample set of complete states.
 Then, we use random sampling to generate complete states for the sample set. By generating the random samples before applying SAI to complete states, there is no need to check if each randomly generated sample is already in the sample set to copy its cost-to-goal estimate, since a high cost-to-goal estimate $L+1$ is reduced by the SAI in this case. This step is handled by SAI, which updates the value if necessary. Applying SAI to the complete states concludes the preprocessing of the sample set before it proceeds to the supervised learning stage.
 
-Overall, this workflow applies a series of transformations to the sample set. Each step contributes to improving the distribution of samples over the state space\mri{No! How?}\rvi{State completion distributes the samples in the regions that will be found during the search (FSS); random samples reaches unexplored regions; the others refer to "refining their cost-to-goal estimates". If necessary I can make this explicit in this sentence, but it is what has already been explained earlier.} or refining their cost-to-goal estimates, both key factors for enhancing the quality of the sample set. Finally, the preprocessed sample set is used in the supervised learning phase, independent of this workflow, to train a heuristic function.
+Overall, this workflow applies a series of transformations to the sample set. Each step contributes to adjusting the distribution of samples over the state space or refining their cost-to-goal estimates, both key factors for enhancing the quality of the sample set. Finally, the preprocessed sample set is used in the supervised learning phase, independent of this workflow, to train a heuristic function.
 
 \begin{figure}[tb]
     \caption[An example of sampling in Blocks World.]{An example of sampling in Blocks World. Each set of blocks corresponds to a state, with its facts described on the side and its label below.}
@@ -278,7 +274,4 @@ Examples of all techniques can be extracted from \cref{fig:example}. The subset 
 
 We can illustrate a regression using the FSM algorithm. Suppose we want to sample $6$~states with $p_{\bfsrw}=0.67$ and a maximum rollout limit of $L=4$. The goal state is initially sampled and expanded, adding the state~$s_1$ to the open queue $Q$ (see \cref{alg:fsm}). In the second iteration, $s_1$ is expanded, adding $s_2$ and $s_3$ to $Q$, which are also expanded and sampled in the next iteration. The BFS phase ends with $4$~samples, and the random walk phase begins, where $s_2$ and $s_3$ are the starting states for rollouts. Consider $s_3$ for the first rollout, which generates $s_4$ and then $s_5$. The starting state $s_3$ was sampled in the BFS and is not sampled again, so only $s_4$ and $s_5$ are inserted in the sample set. Upon reaching $s_5$, the rollout ends due to the maximum regression limit~$L = 4$. The sample budget is reached, and the sample generation ends. If the sample budget were larger, a new rollout would start from a predecessor of $s_2$ or $s_3$ excluding $s_4$. Assuming unit costs, the cost-to-goal estimate of a sample is the number of hops to the goal, e.g.,~$h(s_4)=3$.
 
-Originally, a random walk rollout cannot visit states sampled by BFS. However, even though $s_4$ has the same configuration as~$s_2$, they have different facts, making them distinct states according to duplicate detection. Note that $h(s_2)=2$ and $h(s_4)=4$, i.e.,~the cost-to-goal estimate of $s_4$ overestimates \hstar. When using the model-based approach to complete states, both $s_2$ and $s_4$ become the same complete state~$s = \{$\mbox{\factclear{R}}, \mbox{\factclear{G}}, \mbox{\factclear{B}}, \mbox{\factontable{R}}, \mbox{\factontable{G}}, \mbox{\factontable{B}}$\}$, and the SAI updates the cost-to-goal estimate of $s_4$ to $h(s_4)=\min(4,2)=2$. On the other hand, SUI also adjusts the value. When creating the graph~$G$, a new arc is inserted from $s_4$ to $s_1$ motivated by the operator that moves the green block onto the blue block. Thus, in the update phase, the estimate of $s_4$ is updated to $h(s_4)=h(s_1)+1=1+1=2$, reaching \hstar in the same way. In the next iteration, the cost-to-goal estimate of $s_5$ is updated to $h(s_5)=h(s_4)+1=2+1=3$, also reaching \hstar.
-
-\mri{(I didn't understand the first word), incoherent \& not informative}
-\rvi{It is not clear what is inconsistent. Which sentence? And inconsistent with what? Still, it exemplifies how state completion, SAI and SUI work. Why is it not informative to use a practical example to explain these techniques?}
+Originally, a random walk rollout cannot visit states sampled by BFS. However, even though $s_4$ has the same configuration as~$s_2$, they have different facts, making them distinct states according to duplicate detection. Note that $h(s_2)=2$ and $h(s_4)=4$, i.e.,~the cost-to-goal estimate of $s_4$ overestimates \hstar. When using the mutex-based approach to complete states, both $s_2$ and $s_4$ become the same complete state~$s = \{$\mbox{\factclear{R}}, \mbox{\factclear{G}}, \mbox{\factclear{B}}, \mbox{\factontable{R}}, \mbox{\factontable{G}}, \mbox{\factontable{B}}$\}$, and the SAI updates the cost-to-goal estimate $h(s_4)=\min(4,2)=2$. On the other hand, SUI also adjusts the value. When creating the graph~$G$, a new arc is inserted from $s_4$ to $s_1$ motivated by the operator that moves the green block onto the blue block. Thus, we can update the estimate of $s_4$ to $h(s_4)=h(s_1)+1=1+1=2$, reaching \hstar in the same way. In the next iteration, the cost-to-goal estimate of $s_5$ is updated to $h(s_5)=h(s_4)+1=2+1=3$, also reaching~\hstar.
