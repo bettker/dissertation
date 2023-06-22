@@ -1,5 +1,6 @@
 *.aux
 *.bbl
+*.bcf
 *.blg
 *.fdb_latexmk
 *.fls
@@ -7,7 +8,10 @@
 *.lof
 *.log
 *.lot
+*.nav
 *.out
-ppgc-diss-*.pdf
 *.synctex.gz
+*.run.xml
+*.snm
 *.toc
+ppgc-diss-*.pdf

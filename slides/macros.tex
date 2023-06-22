@@ -1,0 +1,204 @@
+\newcommand{\bs}{\texttt{\char`\\}} %% backslash in tt font
+\newcommand{\us}{\texttt{\char`_}} %% underscore in tt font
+
+%% Indentation and other things for algorithms
+\newcommand{\comment}[1]{\hspace*{\fill}\hilite{[#1]}}
+%% for pseudo-code comments
+\newcommand{\keyword}[1]{\ensuremath{\textup{\textbf{#1}}}}
+\newcommand{\func}[1]{\ensuremath{\textup{#1}}}
+%% for pseudo-code
+\newcommand{\var}[1]{\ensuremath{\textit{#1}}}
+%% for pseudo-code and math variables
+\newcommand{\val}[1]{\ensuremath{\textup{#1}}}
+%% for values in a finite-domain variable's domain
+\newcommand{\op}[1]{\ensuremath{\textit{#1}}}
+%% for actions in action sequences in plans etc. (note that \action is
+%% already used by LaTeX or some package)
+
+\newcommand{\ind}{{}\qquad}
+\newcommand{\indtwo}{\ind\qquad}
+\newcommand{\indthree}{\indtwo\qquad}
+\newcommand{\indfour}{\indthree\qquad}
+\newcommand{\indfive}{\indfour\qquad}
+
+%% Space-saving version of center environment.
+\newenvironment{tightcenter}{\centering}{}
+
+%% Math environments
+\newenvironment{tightalign}[1][c]{\par\(\begin{array}[#1]{@{}r@{}l}}
+               {\end{array}\)\par}
+\newenvironment{tightalignnopar}[1][c]{\(\begin{array}[#1]{@{}r@{}l}}
+               {\end{array}\)}
+\newenvironment{wrappedmath}[1][t]{\begin{array}[#1]{@{}l}}{\end{array}}
+
+%% Don't use proof environment for start of proof since that
+%% automatically adds a qed symbol at the end.
+\newenvironment{proofstart}{\begin{block}{Proof.}}{\hspace*{\fill}\dots\end{block}}
+\newenvironment{proofmiddle}{\begin{block}{Proof (continued).}}{\hspace*{\fill}\dots\end{block}}
+\newenvironment{proofend}{\begin{proof}[Proof (continued).]}{\end{proof}}
+\newenvironment{proofsketch}{\begin{block}{Proof Sketch.}}{\end{block}}
+\newenvironment{proofsketchstart}{\begin{block}{Proof Sketch.}}{\hspace*{\fill}\dots\end{block}}
+\newenvironment{proofsketchmiddle}{\begin{block}{Proof Sketch (continued).}}{\hspace*{\fill}\dots\end{block}}
+\newenvironment{proofsketchend}{\begin{proof}[Proof Sketch (continued).]}{\end{proof}}
+\newcommand{\tbc}{\hspace*{\fill}\dots}
+
+\newtheorem{proposition}{Proposition}
+
+%% Basic text stuff
+
+\newcommand{\hilite}[1]{\textcolor{structure.fg}{#1}}
+
+\newcommand{\ie}{i.e.}
+\newcommand{\eg}{e.g.}
+
+\newcommand{\grey}[1]{\textcolor{lightgray}{#1}}
+\newcommand{\textred}[1]{{\color{red} #1}}
+\newcommand{\textblue}[1]{{\color{blue} #1}}
+\newcommand{\textgreen}[1]{{\color{green} #1}}
+
+%% Algorithms, mathematical notation etc.
+
+\newcommand{\hstar}{\ensuremath{h^*}}
+\newcommand{\rstar}{\ensuremath{r^*}}
+\newcommand{\astar}{\ensuremath{\textup{A}^*}}
+\newcommand{\idastar}{\ensuremath{\textup{IDA}^*}}
+\newcommand{\dom}{\textup{dom}}
+\newcommand{\sasplus}{\ensuremath{\textup{SAS}^+}}
+
+\newcommand{\true}{\ensuremath{\mathbf{T}}}
+\newcommand{\false}{\ensuremath{\mathbf{F}}}
+
+\newcommand{\pre}{\ensuremath{\textit{pre}}}
+\newcommand{\eff}{\ensuremath{\textit{eff}}}
+\newcommand{\cost}{\ensuremath{\textit{cost}}}
+\newcommand{\add}{\ensuremath{\textit{add}}}
+\newcommand{\del}{\ensuremath{\textit{del}}}
+\newcommand{\precond}{\ensuremath{\textit{prec}}}
+
+\newcommand{\applyop}[2]{#2\llbracket#1\rrbracket}
+\newcommand{\applyplan}[2]{#2\llbracket#1\rrbracket}
+%% These macros should no longer be used.
+%% TODO: Remove them entirely rather than commenting them out once
+%% we're happy with our revisions of the parts that used to use them.
+%% \newcommand{\changes}[2]{\lbrack #1\rbrack_{#2}}
+%% \newcommand{\addchanges}[2]{\lbrack #1\rbrack^+_{#2}}
+%% \newcommand{\delchanges}[2]{\lbrack #1\rbrack^-_{#2}}
+\newcommand{\condeff}{\vartriangleright}
+
+\newcommand{\addset}{\ensuremath{\textit{addset}}}
+\newcommand{\delset}{\ensuremath{\textit{delset}}}
+
+\newcommand{\effcond}{\ensuremath{\textit{effcond}}}
+\newcommand{\consist}{\ensuremath{\textit{consist}}}
+
+\newcommand{\vars}{\ensuremath{\textit{vars}}}
+
+\newcommand{\regr}{\ensuremath{\textit{regr}}}
+\newcommand{\regrstrips}{\ensuremath{\textit{sregr}}}
+\newcommand{\eprecon}[2]{\textit{EPC}_{#1}(#2)}
+\newcommand{\sregrpairs}[2]{R(#2, #1)}
+\newcommand{\varset}[1]{\ensuremath{\textit{vars}(#1)}}
+\newcommand{\conj}[1]{\ensuremath{\textit{conj}(#1)}}
+
+%% Blocks world examples
+\newcommand{\AONB}{\var{A-on-B}}
+\newcommand{\AONC}{\var{A-on-C}}
+\newcommand{\AOND}{\var{A-on-D}}
+\newcommand{\BONA}{\var{B-on-A}}
+\newcommand{\BONC}{\var{B-on-C}}
+\newcommand{\BOND}{\var{B-on-D}}
+\newcommand{\CONA}{\var{C-on-A}}
+\newcommand{\CONB}{\var{C-on-B}}
+\newcommand{\COND}{\var{C-on-D}}
+\newcommand{\DONA}{\var{D-on-A}}
+\newcommand{\DONB}{\var{D-on-B}}
+\newcommand{\DONC}{\var{D-on-C}}
+\newcommand{\AONTABLE}{\var{A-on-table}}
+\newcommand{\BONTABLE}{\var{B-on-table}}
+\newcommand{\CONTABLE}{\var{C-on-table}}
+\newcommand{\CLEARA}{\var{A-clear}}
+\newcommand{\CLEARB}{\var{B-clear}}
+\newcommand{\CLEARC}{\var{C-clear}}
+
+%% Macros to align the width of things.
+\newlength{\mywidth}
+\newcommand{\setmywidth}[1]{\settowidth{\mywidth}{#1}}
+\newcommand{\usemywidth}[1]{\makebox[\mywidth][l]{#1}}
+\newcommand{\usemywidthmath}[1]{\usemywidth{\ensuremath{#1}}}
+
+\newcounter{mysaveenumi}
+\newcommand{\enumtbc}{\setcounter{mysaveenumi}{\theenumi}}
+\newcommand{\continueenum}{\setcounter{enumi}{\themysaveenumi}}
+
+%% Complexity classes.
+\newcommand{\decisionclass}[1]{\ensuremath{\textsf{\textup{#1}}}}
+\newcommand{\dtime}{\decisionclass{DTIME}}
+\newcommand{\ntime}{\decisionclass{NTIME}}
+\newcommand{\dspace}{\decisionclass{DSPACE}}
+\newcommand{\nspace}{\decisionclass{NSPACE}}
+\newcommand{\ptime}{\decisionclass{P}}
+\newcommand{\np}{\decisionclass{NP}}
+\newcommand{\pspace}{\decisionclass{PSPACE}}
+\newcommand{\npspace}{\decisionclass{NPSPACE}}
+\newcommand{\exptime}{\decisionclass{EXP}}
+\newcommand{\expspace}{\decisionclass{EXPSPACE}}
+\newcommand{\dblexptime}{\decisionclass{2-EXP}}
+\newcommand{\dblexpspace}{\decisionclass{2-EXPSPACE}}
+
+%% Turing machine stuff.
+\newcommand{\accept}{{\textsf{Y}}}
+
+%% Decision problems and related things.
+\newcommand{\planex}{\textsc{PlanEx}}
+\newcommand{\bcplanex}{\textsc{BCPlanEx}}
+\newcommand{\easier}{\ensuremath{\le_{\text{p}}}}
+
+%% Various stuff.
+\newcommand{\relaxation}[1]{#1^+}
+\newcommand{\onset}[1]{\textit{on}(#1)}
+
+%% Heuristics.
+\newcommand{\hplus}{\ensuremath{h^+}}
+\newcommand{\hmax}{\ensuremath{h^{\text{max}}}}
+\newcommand{\hadd}{\ensuremath{h^{\text{add}}}}
+\newcommand{\hlmcut}{\ensuremath{h^{\text{LM-cut}}}}
+\newcommand{\hff}{\ensuremath{h^{\text{FF}}}}
+\newcommand{\hcs}{\ensuremath{h^{\text{cs}}}}
+\newcommand{\hsa}{\ensuremath{h^{\text{sa}}}}
+\newcommand{\hlst}{\ensuremath{h^{\text{lst}}}}
+\newcommand{\hm}{\ensuremath{h^m}}
+\newcommand{\hmhs}{\ensuremath{h^\text{MHS}}}
+\newcommand{\hucp}{\ensuremath{h^\text{UCP}}}
+\newcommand{\hlmcount}{\ensuremath{h^\text{LM-count}}}
+\newcommand{\hflow}{\ensuremath{h^\text{flow}}}
+\newcommand{\hposthoc}[1][]{\ensuremath{h_{#1}^{\textup{PhO}}}}
+\newcommand{\hcanon}{\ensuremath{h^{\mathcal{C}}}}
+\newcommand{\hocp}{\ensuremath{h^\textup{OCP}}}
+
+%% Used for AND/OR graphs.
+%% Note that \succ is already used by LaTeX.
+\newcommand{\suc}{\ensuremath{\textit{succ}}}
+
+%% Used for abstraction chapters.
+\newcommand{\graphequiv}{\stackrel{\textup{G}}{\sim}}
+\newcommand{\cg}{\ensuremath{\textit{CG}}}
+\newcommand{\hhhh}{\ensuremath{h_{\text{HHH}}}}
+
+\newcommand{\cliques}{\ensuremath{\textit{cliques}}}
+
+% AND/OR landmarks
+\newcommand{\andorarc}[2]{\ensuremath{\langle #1,#2\rangle}}
+\newcommand{\landmark}{\textit{LM}}
+
+% Landmark orderings
+\newcommand{\naturalord}[2]{\ensuremath{#1\rightarrow #2}}
+\newcommand{\necessaryord}[2]{\ensuremath{#1\rightarrow_{\textup{n}} #2}}
+\newcommand{\greedynecessaryord}[2]{\ensuremath{#1\rightarrow_{\textup{gn}} #2}}
+\newcommand{\arbitraryord}[2]{\ensuremath{#1\rightarrow_{\textup{x}} #2}}
+
+
+\newcommand{\lpvar}[1]{\ensuremath{\hilite{#1}}}
+\newcommand{\ocvar}[1]{\lpvar{\textup{Count}_{#1}}}
+
+\providecommand{\floor}[1]{\ensuremath{\left\lfloor #1\right\rfloor}}
+\providecommand{\ceil}[1]{\ensuremath{\left\lceil #1\right\rceil}}
