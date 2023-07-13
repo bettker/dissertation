@@ -142,7 +142,7 @@ Comparing \cref{tab:small-difference-hstar,tab:small-heuristics-difference-hstar
 \subsection{Comparison to Logic-Based Heuristic Functions}
 \label{sec:small-exps-hvalue-comparison}
 
-We now compare the NN-based heuristics with logic-based heuristics. The number of expanded states of \gbfs guided by different heuristic functions is shown in \cref{tab:small-heuristics}. The NNs are trained with samples obtained with \bfsrw, all cost-to-goal improvement strategies, and regression depth limited by \rlmeanfx.  
+We now compare the NN-based heuristics with logic-based heuristics. The number of expanded states of \gbfs guided by different heuristic functions is shown in \cref{tab:small-heuristics}. The NNs are trained with samples obtained with \bfsrw (except \hnnrwrs which was sampled by random walk), all cost-to-goal improvement strategies, and regression depth limited by \rlmeanfx.  
 
 \begin{table}[tb]
     \caption[Expanded states of different heuristic functions.]{Expanded states of \gbfs with different heuristic functions. The ``\hstar'' column is ideal and only used for comparison.}
@@ -162,7 +162,9 @@ We now compare the NN-based heuristics with logic-based heuristics. The number o
 
 First, we see that \hnnbase expands fewer states than \hgc in most domains except Grid, Scanalyzer, and VisitAll, but it is far worse than \hff except in Blocks and VisitAll, where the learned heuristic has particularly good results. We also see that \hnnl{\rlmeanfx} expands less than \hnnbase in five domains. \hff has better results than \hnnl{\rlmeanfx}. However, \hnnl{\rlmeanfx} surpasses \hff if $20\,\%$ of the samples are random, or if we increase the budget of \hnnl{\rlmeanfx} to $5\,\%$~(instead of $1\,\%$) of the number of states in the FSS as shown in \cref{tab:small-sample-pct}. This table also indicates that after increasing the budget to $50\,\%$ of the number of states in the FSS, the gains in quality of the learned heuristic are negligible. Additionally, by comparing \cref{tab:small-heuristics,tab:small-sample-pct}, we see that having fewer samples but \hstar estimates has better results than having more samples but no \hstar estimates, meaning that improving the cost-to-goal estimates is more important than having more samples.
 
-We see that for the NN-based heuristics, the order of approaches in terms of \mbox{\h-\hstar}~difference~(\cref{tab:small-heuristics-difference-hstar}) and expanded states~(\cref{tab:small-heuristics}) remains consistent for \hnnbase and \hnnl{\rlmeanfx}, but not for \hnnrs, which has a higher mean difference than \hnnl{\rlmeanfx} but presents the least state expansions, even when compared to \hff. With these results, we conclude that a better generalization over the forward state space is good for the samples obtained during regression. In contrast, despite worsening the mean difference to the FSS, random samples are obtained after the regression procedure and can be helpful due to the reasons discussed in \cref{sec:small-exps-random-samples}. This means that a smaller \mbox{\h-\hstar}~difference is not a definitive indication of good search quality.
+We see that for the NN-based heuristics, the order of approaches in terms of \mbox{\h-\hstar}~difference~(\cref{tab:small-heuristics-difference-hstar}) and expanded states~(\cref{tab:small-heuristics}) remains consistent for \hnnbase and \hnnl{\rlmeanfx}, but not for \hnnrs, which has a higher mean difference than \hnnl{\rlmeanfx} but presents the least state expansions, even when compared to \hff. We experimented with the NN-based heuristic using all our techniques, except for the RW sampling algorithm, to observe the performance gain of our proposed FSM algorithm (\hnnrs) over the RW algorithm (\hnnrwrs). We see that RW's NN outperforms FSM's by ten expansions in Grid but achieves approximately double the expanded states in Blocks. Overall, sampling with FSM slightly outperforms RW in other domains, with a geometric mean of $10\,\%$ fewer expansions.
+
+With these results, we conclude that a better generalization over the forward state space is good for the samples obtained during regression. In contrast, despite worsening the mean difference to the FSS, random samples are obtained after the regression procedure and can be helpful due to the reasons discussed in \cref{sec:small-exps-random-samples}. This means that a smaller \mbox{\h-\hstar}~difference is not a definitive indication of good search quality.
 
 \section{Large State Spaces}
 \label{sec:large-experiments}
@@ -193,8 +195,6 @@ Next, we compare the logic-based heuristics~\hff and \hgc, the baseline \hnnbase
     \input{tables/large-heuristics-baseline}
 \end{table}
 
-\newpage
-
 When comparing \cref{tab:large-rolloutlimit-mutex,tab:large-heuristics-baseline}, we notice that all NN-based heuristics have similarly poor results in Rovers, independent of configuration. Considering only the learned heuristics, when using $20\,\%$ of random samples~(\hnnrs) instead of $0\,\%$~(\hnnl{\rlmeanfx}), there are intermediate improvements of about $15\,\%$ in Storage, Transport, and VisitAll, and a significant improvement in Pipes-NT, from approximately $18\,\%$ to $80\,\%$~coverage.
 
 \section{Comparison to Other Methods}
@@ -215,8 +215,6 @@ We now compare the coverage results between all methods over the same tasks. We 
     \centering
     \input{tables/large-literature-comparison}
 \end{table}
-
-\newpage
 
 According to \citet{otoole2022sampling}, the proportion of random samples in the final sample set has the most positive effect on coverage -- approximately doubling it when going from $0\,\%$ to $50\,\%$ of random samples ($34.7$ vs.~$59.9$, from their supplementary material). As seen in \cref{tab:large-literature-comparison}, we also notice an improvement from using random samples, although smaller. This improvement is more prominent in \citet{otoole2022sampling}, most likely due to their small quantity of rollouts~(only five), negatively influencing sample diversity, which is compensated by adding random samples. Our experiments show that all domains either improve or have similar results, and the mean coverage improves by about $10\,\%$. Also, except for Pipes-NT, we saw no improvements above $5\,\%$ using $50\,\%$ of random samples compared to $20\,\%$. This means that despite having the highest coverage with $20\,\%$, using $50\,\%$ of random samples can maintain similar coverage while improving sampling time, as random samples are generated faster than in regression and are not computed in the \h-value improvement strategies.
 
@@ -245,15 +243,13 @@ Another limitation to consider is the influence of seed initialization on the tr
     \input{tables/small-stdev}
 \end{table}
 
-\newpage
-
-An example is shown in \cref{tab:small-stdev} comparing the mean number of expanded states of the baseline~\hnnbase and~\hnnrs. We see that standard deviation varies per domain, i.e.,~some domains are noisier than others, and training with better-quality samples typically helps. Regarding coverage in large state spaces, the standard deviation was smaller, as it does not vary at the same rate as expanded states. For example, \hnnrs has a Grid coverage of $60$ with a standard deviation of $16$, while the mean standard deviation considering all the other domains is less than $3$.
+\cref{tab:small-stdev} compare the mean number of expansions of the baseline~\hnnbase and~\hnnrs. We see that standard deviation varies per domain, i.e.,~some domains are noisier than others, and training with better-quality samples typically helps. Regarding coverage in large state spaces, the standard deviation was smaller, as it does not vary at the same rate as expanded states. For example, \hnnrs has a Grid coverage of $60$ with a standard deviation of $16$, while the mean standard deviation considering all the other domains is less than $3$.
 
 \subsection{State Representation}
 \label{sec:limitation-representation}
 
-This work and others~\cite{ferber2020neural, ferber2022neural, otoole2022sampling} use the same STRIPS representation, and the NN receives as input a vector of Boolean values representing the set of facts of a complete state, where each input neuron corresponds to a fact. However, this can become inefficient when training over large planning tasks as the input size of the NN grows linearly with the number of facts in the task. Furthermore, sampling methods via regression generate partial states, representing a set of complete states. With the assignment of undefined variables, part of the sampling information is lost.
+This work and others~\cite{ferber2020neural, ferber2022neural, otoole2022sampling} use the same STRIPS representation, and the NN receives as input a vector of Boolean values representing the set of facts of a complete state, where each input neuron corresponds to a fact. However, this can become inefficient when training over large tasks as the input size of the NN grows linearly with the number of facts in the task. Furthermore, sampling methods via regression generate partial states. With the assignment of undefined variables, part of the sampling information is lost.
 
 \citet{yu2020learning} use the same STRIPS representation with a Boolean input for NN but does not complete the undefined variables, assigning false to all $|D(v)|=n$ facts of each undefined variable $v$. Since their undefined variables are represented in \sas, we can infer that at least one of the $n$ facts is true in a complete state. Consequently, by assigning false to all undefined facts, the NN is trained using states that are unreachable during the search process.
 
-On the other hand, \citet{yu2020learning} and \citet{geissmann2015learning} address the \sas representation. They use a multivalued vector to represent a state, which aligns with the internal state representation in Fast~Downward. This choice allows the representation of undefined values and increases the speed of the NN by reducing the dimensionality of the input layer. They discuss that the choice between the Boolean representation and the multivalued representation may depend on the domain, and the performance can vary across different domains. However, on average, this approach has shown worse performance than the Boolean representation in experiments on $46$ domains~\cite{yu2020learning}.
+On the other hand, \citet{yu2020learning} and \citet{geissmann2015learning} address the \sas representation. They use a multivalued vector to represent a state, which aligns with the internal state representation in Fast~Downward. This choice allows the representation of undefined values and increases the speed of the NN by reducing the dimensionality of the input layer. They discuss that the choice may depend on the domain, and the performance can vary across different domains. However, on average, this approach has shown worse performance than the Boolean representation in experiments on $46$ domains~\cite{yu2020learning}.
