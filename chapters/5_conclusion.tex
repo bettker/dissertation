@@ -7,11 +7,10 @@ Among our contributions, the \h-value improvement strategy SUI and the adaptive 
 
 Finally, a systematic analysis of small state spaces against ideal baselines seems to indicate that: a)~for the samples obtained through regression, a distribution covering various portions of the state space without repeated samples close to the goal works best, b)~both the sample size and reasonable cost-to-goal estimates contribute to search performance, with the latter being more important, c)~enough samples of good quality translate to good search performance that can be compared to logic-based heuristics, although model-free approaches (e.g.,~without mutexes) are currently not as good as model-based ones.
 
-\section{Future Work}
-\label{sec:future-work}
-
-Approaches that address the limitations described in \cref{sec:limitations} can be explored. Additionally, compared to logic-based heuristics, some domains do not have good results with learned heuristics, such as Rovers, which, as far as we know, has a low coverage among all NN-based methods. It is unclear why some domains perform well and others poorly among different learned heuristics.
+Future works can be conducted to investigate the scalability of the proposed techniques, as well as approaches that address the limitations described in \cref{sec:limitations} can be explored. Additionally, compared to logic-based heuristics, some domains do not have good results with learned heuristics, such as Rovers, which, as far as we know, has a low coverage among all NN-based methods. It is unclear why some domains perform well and others poorly among different learned heuristics.
 
 We validate the findings of \citet{otoole2022sampling} that including randomly generated samples in the final sample set has a consistently positive influence. However, the underlying reasons for this effect remain unexplained. An study on random sampling can be conducted to understand its effect when combined with other sampling methods. Still, exploring new approaches to determine the cost-to-goal estimate in random samples, as an alternative to the current arbitrary value, could improve performance.
+
+Furthermore, sampling approaches involving novelty can be promising. \citet{otoole2022sampling} proposed generating states that maximize the number of undiscovered facts, i.e., facts that have not been observed in any state of the current rollout. While their approach does not yield significant gains, other methods of novelty or information gain can be explored.
 
 Finally, the training of heuristic functions with model-free approaches seems promising. The experiments demonstrate competitive results compared to the mutex-based one, with a coverage difference of less than $4\,\%$ in 8 out of 10 domains addressed. These findings indicate the potential of model-free approaches, such as those with black-box interfaces.
