@@ -1,176 +1,286 @@
-% -*- mode: latex; coding: utf-8 -*-
-\input{blocksworld-t.tex}
+\documentclass[10pt]{beamer}
 
-\documentclass{gkibeamer}
+% \usetheme[progressbar=frametitle]{metropolis}
+\usetheme{metropolis}
 
-\usepackage[utf8]{inputenc}
-\usepackage{tikz}
-\usepackage{ifthen}
-\usepackage{stmaryrd}
+\definecolor{inf_primary}{RGB}{0, 0, 0}
+\definecolor{inf_secondary}{RGB}{237, 28, 36}
+\definecolor{inf_tertiary}{RGB}{147, 149, 152}
 
-\setbeamertemplate{footline}[frame number]
+\setbeamercolor{normal text}{fg=inf_primary}
+\setbeamercolor{alerted text}{fg=inf_secondary}
 
-\title{Understanding Sample Generation Strategies for Learning Heuristic Functions in Classical Planning}
-\author{
-    \\Rafael Vales Bettker
-    \\[.2\baselineskip]
-    \\Advisor: Prof. Dr. André Grahl Pereira
-}
+\usepackage{appendixnumberbeamer}
 
-\institute{Federal University of Rio Grande do Sul\\Institute of Informatics\\Department of Theoretical Informatics}
-\subject{AI}
-
-\input{macros}
-
-%% Needed for "Content of this Course" slide in most chapters:
-\usetikzlibrary{positioning, arrows.meta, patterns, automata}
-
-\usepackage[linesnumbered, ruled, vlined]{algorithm2e}
-\usepackage{mathtools}
 \usepackage{booktabs}
-\usepackage{comment}
-%\usepackage{natbib}
-\usepackage[citestyle=authoryear,maxnames=10,maxcitenames=1,giveninits=true,backend=biber,uniquelist=false]{biblatex}
-\usepackage[utf8]{inputenc}
-\usepackage[textsize=tiny,colorinlistoftodos,prependcaption]{todonotes}
-\addbibresource{refs.bib}
+\usepackage[scale=2]{ccicons}
 
-\newcommand{\agp}[2][noinline]{\todo[color=orange!60,linecolor={orange!100},#1,fancyline,author=André]{#2}}
-\newcommand{\agpi}[2][inline]{\todo[color=orange!60,linecolor={orange!100},#1,fancyline,author=André]{#2}}
-\newcommand{\mr}[2][noinline]{\todo[color=purple!50,linecolor={purple!100},#1,fancyline,author=Marcus]{#2}}
-\newcommand{\mri}[2][inline]{\todo[color=purple!50,linecolor={purple!100},#1,fancyline,author=Marcus]{#2}}
-\newcommand{\rv}[2][noinline]{\todo[color=red!50,linecolor={red!100},#1,fancyline,author=Rafael]{#2}}
-\newcommand{\rvi}[2][inline]{\todo[color=red!50,linecolor={red!100},#1,fancyline,author=Rafael]{#2}}
-
-% #####################
-\AtBeginSubsection[]
-{
-\begin{frame}[noframenumbering]
-    \frametitle{\insertsubsection}
-    \tableofcontents[currentsection,currentsubsection]
-\end{frame}
-}
-% #####################
+\usepackage{pgfplots}
+\usepgfplotslibrary{dateplot}
 
 \usepackage{xspace}
+\usepackage{cancel}
 \usepackage{array}
-\usepackage[symbol]{footmisc}
-\usepackage[makeroom]{cancel}
+\usepackage{lipsum}
+\usepackage{graphicx}
 
-\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+\usepackage[authoryear]{natbib}
 
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, patterns, automata}
+
+\title{Understanding Sample Generation\\Strategies for Learning Heuristic\\Functions in Classical Planning}
+\date{}
+\author{Author: Rafael Vales Bettker\\Advisor: Prof. Dr. Andr\'{e} Grahl Pereira\\Co-advisor: Prof. Dr. Marcus Ritt}
+\institute{Federal University of Rio Grande do Sul (UFRGS)\\Institute of Informatics\\Department of Theoretical Informatics}
+
+\input{blocksworld.tex}
+
+\newcommand{\email}[1]{\href{mailto:#1}{#1}}
+
+\providecommand{\ssdiameter}{\ensuremath{d^*}\xspace}
+\providecommand{\facts}{\ensuremath{F}\xspace}
+\providecommand{\meanfx}{\ensuremath{\bar F}\xspace}
+\providecommand{\default}{\ensuremath{200}\xspace}
+
+\providecommand{\h}{\ensuremath{h}\xspace}
 \providecommand{\hvalue}[1]{\ensuremath{h^{#1}}\xspace}
+\providecommand{\hstar}{\hvalue{*}}
 \providecommand{\hff}{\hvalue{\text{FF}}}
 \providecommand{\hgc}{\hvalue{\text{GC}}}
-\providecommand{\hstar}{\hvalue{*}}
-\providecommand{\hnn}{$\hat h$\xspace}
-\providecommand{\hnrsl}{$\hat h^{\text{N-RSL}}$\xspace}
-\providecommand{\hboot}{$\hat h^{\text{Boot}}$\xspace}
-\providecommand{\facts}{\ensuremath{F}\xspace}
-\providecommand{\meanfx}{\ensuremath{\overline{F}}\xspace}
-\providecommand{\default}{\ensuremath{200}\xspace}
-\providecommand{\lfacts}{\ensuremath{L_{\facts}}\xspace}
-\providecommand{\lmeanfx}{\ensuremath{L_{\meanfx}\xspace}}
-\providecommand{\ldefault}{\ensuremath{L_{\default}}\xspace}
-\providecommand{\distfarthest}{\ensuremath{d^*}\xspace}
-\providecommand{\sasplus}{\ensuremath{SAS^+}\xspace}
-\providecommand{\hnnbase}{$\hat h_{0}$\xspace}
-\providecommand{\hnnbfsrw}{$\hat h_\text{fsm}$\xspace}
-\providecommand{\hnnbfsrwl}[1]{\ensuremath{\hat h_{#1}}\xspace}
-\providecommand{\hnnrsp}[1]{\ensuremath{\hat h{^{#1\%}_\text{\lmeanfx}}}\xspace}
+\providecommand{\hnnbase}{\ensuremath{\hat h_{0}}\xspace}
+\providecommand{\hnnl}[1]{\ensuremath{\hat h_{#1}}\xspace}
+\providecommand{\hnnrsp}[1]{\ensuremath{\hat h{^{#1\%}_\text{\meanfx}}}\xspace}
 \providecommand{\hnnrs}{\hnnrsp{20}}
+\providecommand{\hnrsl}{\ensuremath{\hat h^{\text{N-RSL}}}\xspace}
+\providecommand{\hboot}{\ensuremath{\hat h^{\text{Boot}}}\xspace}
 
-\date{July 4, 2023}
+\providecommand{\ceil}[1]{\ensuremath{\left\lceil #1\right\rceil}}
+
+\newcommand\blfootnote[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+
 \begin{document}
-\begin{frame}{Outline}
-\tableofcontents
+
+\maketitle
+
+\begin{frame}{Table of contents}
+  \setbeamertemplate{section in toc}[sections numbered]
+  \tableofcontents[hideallsubsections]
 \end{frame}
 
+%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 
 \begin{frame}{Introduction}
 \begin{itemize}
     \item Classical planning provides a method for representing and solving various problems.
-    \pause
     \item Planning tasks are typically defined by the initial state and the desired outcome (goal state).
-    \pause
-    \item Several approaches can find a sequence of actions that transforms an initial state into one that satisfies the goal condition (e.g. best-first search algorithms).
-    \pause
-    \item Logic-based relaxations of planning tasks create some of the most successful heuristic functions.
-    \pause
-    \item The emergence of interest in learning heuristic functions with neural networks has been driven by rapid progress in other application areas.
-\end{itemize}
-\end{frame}
-
-\begin{frame}{Introduction}
-\begin{itemize}
-    \item Learning heuristic functions with neural networks based on samples that are states with their cost-to-goal estimates.
+    \item Heuristic functions guide search algorithms to find solutions.
+    \item Learning heuristic functions with neural networks (NN) based on samples that are states with their cost-to-goal estimates.
     \begin{itemize}
-        \pause
-        \item Generation of pairs of state and cost-to-goal estimate for a state space with fixed goal state.
-        \pause
-        \item Training a neural network (NN) that receives a state as input and produces its cost-to-goal estimator.
-        \pause
-        \item The NN is our \alert{heuristic function} and solves distinct initial states of the sampled state space.
-        \pause
-        \item Greedy best-first search (GBFS) is guided by learned heuristic function to solve a task.
-    \end{itemize}
-    \item Mutex-based approach.
-    \begin{itemize}
-        \item Greater potential to be competitive against logic-based approaches.
+        \item The NN is our \alert{heuristic function} and solves distinct initial states of a state space.
     \end{itemize}
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Contributions}
-\begin{itemize}
-    \item Our contributions include the following:
+\begin{frame}{Problem and Contributions}
+    Learn effective NN-based heuristic functions.
     \begin{itemize}
-        \pause
-        \item A sample generation algorithm that can better represent a relevant subset of the state space through a combination of breadth-first search followed by random walks from the breadth-first search’s leaves.
-        \pause
-        \item On-the-fly state space-based estimations to limit the sampling regression depth to large big cost-to-goal overestimates.
-        \pause
-        \item Two methods to improve cost-to-goal estimates based on detecting samples from the same or neighboring states.
-        \pause
-        \item A systematic study on sampling quality.
+        \item How to generate good samples?
+        \item What is relevant to the quality of the samples?
     \end{itemize}
-\end{itemize}
+    \bigskip
+    \pause
+    Our contributions include
+    \begin{itemize}
+        \item A systematic study of sampling strategies.
+        \item New sampling and \h-value refinement algorithms.
+    \end{itemize}
 \end{frame}
 
+%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Background}
 
 \subsection{Classical Planning}
 
 \begin{frame}{Classical Planning}
-\begin{itemize}
-    \item 
-\end{itemize}
+    \only<-2> {
+        A planning task can be defined as a tuple~$\Pi=\langle\mathcal{S},\mathcal{O},s_0,s^*,\text{cost}\rangle$.
+    }
+    \only<3> {
+        A planning task can be defined as a tuple~$\Pi=\langle\alert{\mathcal{S}},\mathcal{O},s_0,s^*,\text{cost}\rangle$.
+    }
+    \only<4> {
+        A planning task can be defined as a tuple~$\Pi=\langle\mathcal{S},\alert{\mathcal{O}},s_0,s^*,\text{cost}\rangle$.
+    }
+    \only<6> {
+        A planning task can be defined as a tuple~$\Pi=\langle\mathcal{S},\mathcal{O},\alert{s_0},s^*,\text{cost}\rangle$.
+    }
+    \only<7> {
+        A planning task can be defined as a tuple~$\Pi=\langle\mathcal{S},\mathcal{O},s_0,\alert{s^*},\text{cost}\rangle$.
+    }
+    \only<5> {
+        A planning task can be defined as a tuple~$\Pi=\langle\mathcal{S},\mathcal{O},s_0,s^*,\alert{\text{cost}}\rangle$.
+    }
+    \only<8-> {
+        A planning task can be defined as a tuple~$\Pi=\langle\mathcal{S},\mathcal{O},s_0,s^*,\text{cost}\rangle$.
+    }
+
+    \only<3-> { \bigskip }
+
+    \only<1> {
+        \vspace{5.06cm}
+    }
+    \only<2-> {
+        \centering
+        \begin{pgfpicture}{-29.25mm}{-24.3mm}{29.25mm}{24.3mm}
+            \only<3> {
+                \pgfnodebox{RBG}[virtual]{\pgfpolar{180}{24mm}}{\RBG}{1.5pt}{1.5pt}
+                \pgfnodebox{RsBG}[virtual]{\pgfpolar{180}{12mm}}{\RsBG}{1.5pt}{1.5pt}
+                \pgfnodebox{BRsG}[virtual]{\pgfpolar{120}{12mm}}{\BRsG}{1.5pt}{1.5pt}
+                \pgfnodebox{RsGsB}[virtual]{\pgfpolar{0}{0cm}}{\RsGsB}{1.5pt}{1.5pt}
+                \pgfnodebox{GBR}[virtual]{\pgfpolar{130}{24mm}}{\GBR}{1.5pt}{1.5pt}
+                \pgfnodebox{GRsB}[virtual]{\pgfpolar{300}{12mm}}{\GRsB}{1.5pt}{1.5pt}
+                \pgfnodebox{BGR}[virtual]{\pgfpolar{310}{24mm}}{\BGR}{1.5pt}{1.5pt}
+                \pgfnodebox{RGsB}[virtual]{\pgfpolar{0}{12mm}}{\RGsB}{1.5pt}{1.5pt}
+                \pgfnodebox{RBsG}[virtual]{\pgfpolar{60}{12mm}}{\RBsG}{1.5pt}{1.5pt}
+                \pgfnodebox{RsGB}[virtual]{\pgfpolar{240}{12mm}}{\RsGB}{1.5pt}{1.5pt}
+                \pgfnodebox{BRG}[virtual]{\pgfpolar{0}{24mm}}{\BRG}{1.5pt}{1.5pt}
+                \pgfnodebox{GRB}[virtual]{\pgfpolar{50}{24mm}}{\GRB}{1.5pt}{1.5pt}
+                \pgfnodebox{RGB}[virtual]{\pgfpolar{230}{24mm}}{\RGB}{1.5pt}{1.5pt}
+            }
+            \only<-2,4-> {
+                \only<6,8> {
+                    \pgfnodebox{RBG}[virtual]{\pgfpolar{180}{24mm}}{\RBG}{1.5pt}{1.5pt}
+                }
+                \only<-5,7> {
+                    \pgfnodebox{RBG}[virtual]{\pgfpolar{180}{24mm}}{\RBGt}{1.5pt}{1.5pt}
+                }
+                \only<7,8> {
+                    \pgfnodebox{BGR}[virtual]{\pgfpolar{310}{24mm}}{\BGR}{1.5pt}{1.5pt}
+                }
+                \only<-6> {
+                    \pgfnodebox{BGR}[virtual]{\pgfpolar{310}{24mm}}{\BGRt}{1.5pt}{1.5pt}
+                }
+                \only<8> {
+                    \pgfnodebox{RsBG}[virtual]{\pgfpolar{180}{12mm}}{\RsBG}{1.5pt}{1.5pt}
+                    \pgfnodebox{RsGsB}[virtual]{\pgfpolar{0}{0cm}}{\RsGsB}{1.5pt}{1.5pt}
+                    \pgfnodebox{RsGB}[virtual]{\pgfpolar{240}{12mm}}{\RsGB}{1.5pt}{1.5pt}
+                    \pgfnodebox{GRsB}[virtual]{\pgfpolar{300}{12mm}}{\GRsB}{1.5pt}{1.5pt}
+                }
+                \only<-7> {
+                    \pgfnodebox{RsBG}[virtual]{\pgfpolar{180}{12mm}}{\RsBGt}{1.5pt}{1.5pt}
+                    \pgfnodebox{RsGsB}[virtual]{\pgfpolar{0}{0cm}}{\RsGsBt}{1.5pt}{1.5pt}
+                    \pgfnodebox{RsGB}[virtual]{\pgfpolar{240}{12mm}}{\RsGBt}{1.5pt}{1.5pt}
+                    \pgfnodebox{GRsB}[virtual]{\pgfpolar{300}{12mm}}{\GRsBt}{1.5pt}{1.5pt}
+                }
+                \pgfnodebox{BRsG}[virtual]{\pgfpolar{120}{12mm}}{\BRsGt}{1.5pt}{1.5pt}
+                \pgfnodebox{GBR}[virtual]{\pgfpolar{130}{24mm}}{\GBRt}{1.5pt}{1.5pt}
+                \pgfnodebox{RGsB}[virtual]{\pgfpolar{0}{12mm}}{\RGsBt}{1.5pt}{1.5pt}
+                \pgfnodebox{RBsG}[virtual]{\pgfpolar{60}{12mm}}{\RBsGt}{1.5pt}{1.5pt}
+                \pgfnodebox{BRG}[virtual]{\pgfpolar{0}{24mm}}{\BRGt}{1.5pt}{1.5pt}
+                \pgfnodebox{GRB}[virtual]{\pgfpolar{50}{24mm}}{\GRBt}{1.5pt}{1.5pt}
+                \pgfnodebox{RGB}[virtual]{\pgfpolar{230}{24mm}}{\RGBt}{1.5pt}{1.5pt}
+            }
+            \only<4,5> {
+                \pgfsetarrowsend{Triangle[scale=0.8pt]}
+                \pgfsetstrokecolor{black}
+                \pgfnodeconnline{RsBG}{BRsG}
+                \pgfnodeconnline{GBR}{BRsG}
+                \pgfnodeconnline{GRsB}{RsGsB}
+                \pgfnodeconnline{BGR}{GRsB}
+                \pgfnodeconnline{RGsB}{RsGsB}
+                \pgfnodeconnline{BRsG}{RsGsB}
+                \pgfnodeconnline{RsGB}{RsGsB}
+                \pgfnodeconnline{BRG}{RGsB}
+                \pgfnodeconnline{GRB}{RBsG}
+                \pgfnodeconnline{RGB}{RsGB}
+                \pgfnodeconnline{RBsG}{RGsB}
+                \pgfnodeconnline{GRsB}{RsGB}
+                \pgfnodeconnline{RsBG}{RBG}
+                \pgfnodeconnline{RsGsB}{RsBG}
+                \pgfnodeconnline{RBsG}{RsGsB}
+            }
+            \only<-3,6-> {
+                \pgfsetstrokecolor{lightgray}
+            }
+            \pgfnodeconnline{BRsG}{RsBG}
+            \pgfnodeconnline{BRsG}{GBR}
+            \pgfnodeconnline{RsGsB}{GRsB}
+            \pgfnodeconnline{RsGsB}{RGsB}
+            \pgfnodeconnline{RsGsB}{BRsG}
+            \pgfnodeconnline{RGsB}{BRG}
+            \pgfnodeconnline{RBsG}{GRB}
+            \pgfnodeconnline{RsGB}{RGB}
+            \pgfnodeconnline{RGsB}{RBsG}
+            \pgfnodeconnline{RsGsB}{RBsG}
+            \only<8> {
+                \pgfsetarrowsend{Triangle[scale=0.8pt]}
+                \pgfsetstrokecolor{black}
+                \pgfnodeconnline{RBG}{RsBG}
+                \pgfnodeconnline{RsBG}{RsGsB}
+                \pgfnodeconnline{RsGsB}{RsGB}
+                \pgfnodeconnline{RsGB}{GRsB}
+                \pgfnodeconnline{GRsB}{BGR}
+            }
+            \only<-7> {
+                \pgfnodeconnline{RBG}{RsBG}
+                \pgfnodeconnline{RsBG}{RsGsB}
+                \pgfnodeconnline{RsGsB}{RsGB}
+                \pgfnodeconnline{RsGB}{GRsB}
+                \pgfnodeconnline{GRsB}{BGR}
+            }
+        \end{pgfpicture}
+    }
 \end{frame}
 
 \subsection{Related Work}
 
 \begin{frame}{Related Work}
-\begin{itemize}
-    \item 
-\end{itemize}
+\begin{columns}
+    \begin{column}{0.5\textwidth}
+        Structured NN-based
+        \newline
+        \begin{itemize}
+            \item Structured neural networks.
+            \item Encode part of the model into the network architecture.
+            \item Tipically multi-domain or domain-independent.
+            \item E.g. \citet{shen2020learning}
+        \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+        Non-structured NN-based
+        \newline
+        \begin{itemize}
+            \item Feedforward neural networks.
+            \item Highly independent of the task description. 
+            \item Typically state space-specific.
+            \item E.g. \citet{otoole2022sampling}
+            \newline
+        \end{itemize}
+    \end{column}
+\end{columns}
 \end{frame}
 
+%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Sample Generation}
 
 \begin{frame}{Sample Generation}
 \begin{itemize}
-    \item Sample generation is a algorithmic problem.
+    \item Sample generation is an algorithmic problem.
     \begin{itemize}
         \item Black-box model: explores the state space through the generation of successors/predecessors.
     \end{itemize}
-    \pause
+    \bigskip
     \item Main approaches:
     \begin{itemize}
         \item Progression: forward search from the initial state.
-        \pause
         \item Regression: backward search from the goal state.
-        \pause
         \item Random sampling: random generation of states from the state space.
     \end{itemize}
 \end{itemize}
@@ -181,13 +291,9 @@
 \begin{frame}{Sampling by Regression}
 \begin{itemize}
     \item Expand the backward state space through reverse operators.
-    \pause
-    \item The sampling algorithm runs until it generates $N$ samples.
-    \pause
     \item Usually the run is restarted after reaching the \alert{regression limit}. Each run is called a \alert{rollout}.
-    \pause
-    \item The cost-to-goal estimates of a state is the sum of the operator costs applied since the goal state.
-    \pause
+    \item The cost-to-goal estimates (\h-value) of a state is the sum of the operator costs applied since the goal state.
+    \bigskip
     \item Main sampling algorithms:
     \begin{itemize}
         \item Breadth-first Search (BFS)
@@ -198,306 +304,252 @@
 \end{frame}
 
 \begin{frame}{FSM}
+\textbf{Our proposal:} FSM
 \begin{itemize}
-    \item \textbf{Our proposal:} FSM
-    \begin{itemize}
-        \item Combines good coverage of states close to goal state (BFS) along with good coverage at medium/long distance from the goal state (RW).
-    \end{itemize}
-    \bigskip \pause
-    \item First step: Generates a portion of the samples in a BFS rollout.
-    \pause
-    \item Second step: Runs multiple RW rollouts until generating the total samples.
-    \begin{itemize}
-        \item Each RW rollout starts from a BFS leaf state.
-    \end{itemize}
+    \item Combines good coverage at short distances (BFS) with medium to long distances (RW).
 \end{itemize}
+\bigskip
+Two-stage sampling
+\begin{enumerate}
+    \item Generates a portion of the samples in a BFS rollout.
+    \item Run multiple RW rollouts starting from BFS' leaves.
+\end{enumerate}
 \end{frame}
 
 \begin{frame}{FSM}
-\only<1> {
-    \begin{pgfpicture}{-29.25mm}{-24.3mm}{29.25mm}{24.3mm}
-        \pgfnodebox{RsGsB}[virtual]{\pgfpolar{0}{0cm}}{\RsGsBt}{1.5pt}{1.5pt}
-        \pgfnodebox{RGsB}[virtual]{\pgfpolar{0}{12mm}}{\RGsBt}{1.5pt}{1.5pt}
-        \pgfnodebox{RBsG}[virtual]{\pgfpolar{60}{12mm}}{\RBsGt}{1.5pt}{1.5pt}
-        \pgfnodebox{BRsG}[virtual]{\pgfpolar{120}{12mm}}{\BRsGt}{1.5pt}{1.5pt}
-        \pgfnodebox{RsBG}[virtual]{\pgfpolar{180}{12mm}}{\RsBGt}{1.5pt}{1.5pt}
-        \pgfnodebox{RsGB}[virtual]{\pgfpolar{240}{12mm}}{\RsGBt}{1.5pt}{1.5pt}
-        \pgfnodebox{GRsB}[virtual]{\pgfpolar{300}{12mm}}{\GRsBt}{1.5pt}{1.5pt}
-        \pgfnodebox{BRG}[virtual]{\pgfpolar{0}{24mm}}{\BRGt}{1.5pt}{1.5pt}
-        \pgfnodebox{GRB}[virtual]{\pgfpolar{50}{24mm}}{\GRBt}{1.5pt}{1.5pt}
-        \pgfnodebox{GBR}[virtual]{\pgfpolar{130}{24mm}}{\GBRt}{1.5pt}{1.5pt}
-        \pgfnodebox{RBG}[virtual]{\pgfpolar{180}{24mm}}{\RBG}{1.5pt}{1.5pt}
-        \pgfnodebox{RGB}[virtual]{\pgfpolar{230}{24mm}}{\RGBt}{1.5pt}{1.5pt}
-        \pgfnodebox{BGR}[virtual]{\pgfpolar{310}{24mm}}{\BGRt}{1.5pt}{1.5pt}
-    \end{pgfpicture}
-}
-\only<2> {
-    \begin{pgfpicture}{-29.25mm}{-24.3mm}{29.25mm}{24.3mm}
-        \pgfnodebox{RsGsB}[virtual]{\pgfpolar{0}{0cm}}{\RsGsBt}{1.5pt}{1.5pt}
-        \pgfnodebox{RGsB}[virtual]{\pgfpolar{0}{12mm}}{\RGsBt}{1.5pt}{1.5pt}
-        \pgfnodebox{RBsG}[virtual]{\pgfpolar{60}{12mm}}{\RBsGt}{1.5pt}{1.5pt}
-        \pgfnodebox{BRsG}[virtual]{\pgfpolar{120}{12mm}}{\BRsGt}{1.5pt}{1.5pt}
-        \pgfnodebox{RsBG}[virtual]{\pgfpolar{180}{12mm}}{\RsBG}{1.5pt}{1.5pt}
-        \pgfnodebox{RsGB}[virtual]{\pgfpolar{240}{12mm}}{\RsGBt}{1.5pt}{1.5pt}
-        \pgfnodebox{GRsB}[virtual]{\pgfpolar{300}{12mm}}{\GRsBt}{1.5pt}{1.5pt}
-        \pgfnodebox{BRG}[virtual]{\pgfpolar{0}{24mm}}{\BRGt}{1.5pt}{1.5pt}
-        \pgfnodebox{GRB}[virtual]{\pgfpolar{50}{24mm}}{\GRBt}{1.5pt}{1.5pt}
-        \pgfnodebox{GBR}[virtual]{\pgfpolar{130}{24mm}}{\GBRt}{1.5pt}{1.5pt}
-        \pgfnodebox{RBG}[virtual]{\pgfpolar{180}{24mm}}{\RBG}{1.5pt}{1.5pt}
-        \pgfnodebox{RGB}[virtual]{\pgfpolar{230}{24mm}}{\RGBt}{1.5pt}{1.5pt}
-        \pgfnodebox{BGR}[virtual]{\pgfpolar{310}{24mm}}{\BGRt}{1.5pt}{1.5pt}
-        \pgfnodeconnline{RsBG}{RBG}
-    \end{pgfpicture}
-}
-\only<3> {
-    \begin{pgfpicture}{-29.25mm}{-24.3mm}{29.25mm}{24.3mm}
-        \pgfnodebox{RsGsB}[virtual]{\pgfpolar{0}{0cm}}{\RsGsBt}{1.5pt}{1.5pt}
-        \pgfnodebox{RGsB}[virtual]{\pgfpolar{0}{12mm}}{\RGsBt}{1.5pt}{1.5pt}
-        \pgfnodebox{RBsG}[virtual]{\pgfpolar{60}{12mm}}{\RBsGt}{1.5pt}{1.5pt}
-        \pgfnodebox{BRsG}[virtual]{\pgfpolar{120}{12mm}}{\BRsG}{1.5pt}{1.5pt}
-        \pgfnodebox{RsBG}[virtual]{\pgfpolar{180}{12mm}}{\RsBG}{1.5pt}{1.5pt}
-        \pgfnodebox{RsGB}[virtual]{\pgfpolar{240}{12mm}}{\RsGBt}{1.5pt}{1.5pt}
-        \pgfnodebox{GRsB}[virtual]{\pgfpolar{300}{12mm}}{\GRsBt}{1.5pt}{1.5pt}
-        \pgfnodebox{BRG}[virtual]{\pgfpolar{0}{24mm}}{\BRGt}{1.5pt}{1.5pt}
-        \pgfnodebox{GRB}[virtual]{\pgfpolar{50}{24mm}}{\GRBt}{1.5pt}{1.5pt}
-        \pgfnodebox{GBR}[virtual]{\pgfpolar{130}{24mm}}{\GBRt}{1.5pt}{1.5pt}
-        \pgfnodebox{RBG}[virtual]{\pgfpolar{180}{24mm}}{\RBG}{1.5pt}{1.5pt}
-        \pgfnodebox{RGB}[virtual]{\pgfpolar{230}{24mm}}{\RGBt}{1.5pt}{1.5pt}
-        \pgfnodebox{BGR}[virtual]{\pgfpolar{310}{24mm}}{\BGRt}{1.5pt}{1.5pt}
-        \pgfnodeconnline{RsBG}{RBG}
-        \pgfnodeconnline{BRsG}{RsBG}
-    \end{pgfpicture}
-}
-\only<4> {
-    \begin{pgfpicture}{-29.25mm}{-24.3mm}{29.25mm}{24.3mm}
-        \pgfnodebox{RsGsB}[virtual]{\pgfpolar{0}{0cm}}{\RsGsB}{1.5pt}{1.5pt}
-        \pgfnodebox{RGsB}[virtual]{\pgfpolar{0}{12mm}}{\RGsBt}{1.5pt}{1.5pt}
-        \pgfnodebox{RBsG}[virtual]{\pgfpolar{60}{12mm}}{\RBsGt}{1.5pt}{1.5pt}
-        \pgfnodebox{BRsG}[virtual]{\pgfpolar{120}{12mm}}{\BRsG}{1.5pt}{1.5pt}
-        \pgfnodebox{RsBG}[virtual]{\pgfpolar{180}{12mm}}{\RsBG}{1.5pt}{1.5pt}
-        \pgfnodebox{RsGB}[virtual]{\pgfpolar{240}{12mm}}{\RsGBt}{1.5pt}{1.5pt}
-        \pgfnodebox{GRsB}[virtual]{\pgfpolar{300}{12mm}}{\GRsBt}{1.5pt}{1.5pt}
-        \pgfnodebox{BRG}[virtual]{\pgfpolar{0}{24mm}}{\BRGt}{1.5pt}{1.5pt}
-        \pgfnodebox{GRB}[virtual]{\pgfpolar{50}{24mm}}{\GRBt}{1.5pt}{1.5pt}
-        \pgfnodebox{GBR}[virtual]{\pgfpolar{130}{24mm}}{\GBRt}{1.5pt}{1.5pt}
-        \pgfnodebox{RBG}[virtual]{\pgfpolar{180}{24mm}}{\RBG}{1.5pt}{1.5pt}
-        \pgfnodebox{RGB}[virtual]{\pgfpolar{230}{24mm}}{\RGBt}{1.5pt}{1.5pt}
-        \pgfnodebox{BGR}[virtual]{\pgfpolar{310}{24mm}}{\BGRt}{1.5pt}{1.5pt}
-        \pgfnodeconnline{RsBG}{RBG}
-        \pgfnodeconnline{BRsG}{RsBG}
-        \pgfnodeconnline{RsBG}{RsGsB}
-    \end{pgfpicture}
-}
-\only<5> {
-    \begin{pgfpicture}{-29.25mm}{-24.3mm}{29.25mm}{24.3mm}
-        \pgfnodebox{RsGsB}[virtual]{\pgfpolar{0}{0cm}}{\RsGsB}{1.5pt}{1.5pt}
-        \pgfnodebox{RGsB}[virtual]{\pgfpolar{0}{12mm}}{\RGsBt}{1.5pt}{1.5pt}
-        \pgfnodebox{RBsG}[virtual]{\pgfpolar{60}{12mm}}{\RBsGt}{1.5pt}{1.5pt}
-        \pgfnodebox{BRsG}[virtual]{\pgfpolar{120}{12mm}}{\BRsG}{1.5pt}{1.5pt}
-        \pgfnodebox{RsBG}[virtual]{\pgfpolar{180}{12mm}}{\RsBG}{1.5pt}{1.5pt}
-        \pgfnodebox{RsGB}[virtual]{\pgfpolar{240}{12mm}}{\RsGBt}{1.5pt}{1.5pt}
-        \pgfnodebox{GRsB}[virtual]{\pgfpolar{300}{12mm}}{\GRsBt}{1.5pt}{1.5pt}
-        \pgfnodebox{BRG}[virtual]{\pgfpolar{0}{24mm}}{\BRGt}{1.5pt}{1.5pt}
-        \pgfnodebox{GRB}[virtual]{\pgfpolar{50}{24mm}}{\GRBt}{1.5pt}{1.5pt}
-        \pgfnodebox{GBR}[virtual]{\pgfpolar{130}{24mm}}{\GBR}{1.5pt}{1.5pt}
-        \pgfnodebox{RBG}[virtual]{\pgfpolar{180}{24mm}}{\RBG}{1.5pt}{1.5pt}
-        \pgfnodebox{RGB}[virtual]{\pgfpolar{230}{24mm}}{\RGBt}{1.5pt}{1.5pt}
-        \pgfnodebox{BGR}[virtual]{\pgfpolar{310}{24mm}}{\BGRt}{1.5pt}{1.5pt}
-        \pgfnodeconnline{RsBG}{RBG}
-        \pgfnodeconnline{BRsG}{RsBG}
-        \pgfnodeconnline{RsBG}{RsGsB}
-        \pgfnodeconnline{GBR}{BRsG}
-    \end{pgfpicture}
-}
-\only<6> {
-    \begin{pgfpicture}{-29.25mm}{-24.3mm}{29.25mm}{24.3mm}
-        \pgfnodebox{RsGsB}[virtual]{\pgfpolar{0}{0cm}}{\RsGsB}{1.5pt}{1.5pt}
-        \pgfnodebox{RGsB}[virtual]{\pgfpolar{0}{12mm}}{\RGsBt}{1.5pt}{1.5pt}
-        \pgfnodebox{RBsG}[virtual]{\pgfpolar{60}{12mm}}{\RBsGt}{1.5pt}{1.5pt}
-        \pgfnodebox{BRsG}[virtual]{\pgfpolar{120}{12mm}}{\BRsG}{1.5pt}{1.5pt}
-        \pgfnodebox{RsBG}[virtual]{\pgfpolar{180}{12mm}}{\RsBG}{1.5pt}{1.5pt}
-        \pgfnodebox{RsGB}[virtual]{\pgfpolar{240}{12mm}}{\RsGBt}{1.5pt}{1.5pt}
-        \pgfnodebox{GRsB}[virtual]{\pgfpolar{300}{12mm}}{\GRsB}{1.5pt}{1.5pt}
-        \pgfnodebox{BRG}[virtual]{\pgfpolar{0}{24mm}}{\BRGt}{1.5pt}{1.5pt}
-        \pgfnodebox{GRB}[virtual]{\pgfpolar{50}{24mm}}{\GRBt}{1.5pt}{1.5pt}
-        \pgfnodebox{GBR}[virtual]{\pgfpolar{130}{24mm}}{\GBR}{1.5pt}{1.5pt}
-        \pgfnodebox{RBG}[virtual]{\pgfpolar{180}{24mm}}{\RBG}{1.5pt}{1.5pt}
-        \pgfnodebox{RGB}[virtual]{\pgfpolar{230}{24mm}}{\RGBt}{1.5pt}{1.5pt}
-        \pgfnodebox{BGR}[virtual]{\pgfpolar{310}{24mm}}{\BGRt}{1.5pt}{1.5pt}
-        \pgfnodeconnline{RsBG}{RBG}
-        \pgfnodeconnline{BRsG}{RsBG}
-        \pgfnodeconnline{RsBG}{RsGsB}
-        \pgfnodeconnline{GBR}{BRsG}
-        \pgfnodeconnline{RsGsB}{GRsB}
-    \end{pgfpicture}
-}
-\only<7> {
-    \begin{pgfpicture}{-29.25mm}{-24.3mm}{29.25mm}{24.3mm}
-        \pgfnodebox{RsGsB}[virtual]{\pgfpolar{0}{0cm}}{\RsGsB}{1.5pt}{1.5pt}
-        \pgfnodebox{RGsB}[virtual]{\pgfpolar{0}{12mm}}{\RGsBt}{1.5pt}{1.5pt}
-        \pgfnodebox{RBsG}[virtual]{\pgfpolar{60}{12mm}}{\RBsGt}{1.5pt}{1.5pt}
-        \pgfnodebox{BRsG}[virtual]{\pgfpolar{120}{12mm}}{\BRsG}{1.5pt}{1.5pt}
-        \pgfnodebox{RsBG}[virtual]{\pgfpolar{180}{12mm}}{\RsBG}{1.5pt}{1.5pt}
-        \pgfnodebox{RsGB}[virtual]{\pgfpolar{240}{12mm}}{\RsGBt}{1.5pt}{1.5pt}
-        \pgfnodebox{GRsB}[virtual]{\pgfpolar{300}{12mm}}{\GRsB}{1.5pt}{1.5pt}
-        \pgfnodebox{BRG}[virtual]{\pgfpolar{0}{24mm}}{\BRGt}{1.5pt}{1.5pt}
-        \pgfnodebox{GRB}[virtual]{\pgfpolar{50}{24mm}}{\GRBt}{1.5pt}{1.5pt}
-        \pgfnodebox{GBR}[virtual]{\pgfpolar{130}{24mm}}{\GBR}{1.5pt}{1.5pt}
-        \pgfnodebox{RBG}[virtual]{\pgfpolar{180}{24mm}}{\RBG}{1.5pt}{1.5pt}
-        \pgfnodebox{RGB}[virtual]{\pgfpolar{230}{24mm}}{\RGBt}{1.5pt}{1.5pt}
-        \pgfnodebox{BGR}[virtual]{\pgfpolar{310}{24mm}}{\BGR}{1.5pt}{1.5pt}
-        \pgfnodeconnline{RsBG}{RBG}
-        \pgfnodeconnline{BRsG}{RsBG}
-        \pgfnodeconnline{RsBG}{RsGsB}
-        \pgfnodeconnline{GBR}{BRsG}
-        \pgfnodeconnline{RsGsB}{GRsB}
-        \pgfnodeconnline{GRsB}{BGR}
-    \end{pgfpicture}
-}
+\begin{columns}
+    \begin{column}{0.5\textwidth}
+        \textbf{Our proposal:} FSM
+        \begin{itemize}
+            \item Combines good coverage at short distances (BFS) with medium to long distances (RW).
+        \end{itemize}
+        \bigskip
+        Two-stage sampling
+        \begin{enumerate}
+            \only<1> {
+                \item Generates a portion of the samples in a BFS rollout.
+                \item Run multiple RW rollouts starting from BFS' leaves.
+            }\only<2-3> {
+                \item Generates a portion of the samples in a BFS rollout.
+                \item \textcolor{lightgray}{Run multiple RW rollouts starting from BFS' leaves.}
+            }\only<4-> {
+                \item \textcolor{lightgray}{Generates a portion of the samples in a BFS rollout.}
+                \item Run multiple RW rollouts starting from BFS' leaves.
+            }
+        \end{enumerate}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+        \begin{pgfpicture}{-29.25mm}{-24.3mm}{29.25mm}{24.3mm}
+            \pgfnodebox{RBG}[virtual]{\pgfpolar{180}{24mm}}{\RBG}{1.5pt}{1.5pt}
+            \only<-1> {
+                \pgfnodebox{RsBG}[virtual]{\pgfpolar{180}{12mm}}{\RsBGt}{1.5pt}{1.5pt}
+            }\only<2-> {
+                \pgfnodebox{RsBG}[virtual]{\pgfpolar{180}{12mm}}{\RsBG}{1.5pt}{1.5pt}
+            }
+            \only<-2> {
+                \pgfnodebox{BRsG}[virtual]{\pgfpolar{120}{12mm}}{\BRsGt}{1.5pt}{1.5pt}
+                \pgfnodebox{RsGsB}[virtual]{\pgfpolar{0}{0cm}}{\RsGsBt}{1.5pt}{1.5pt}
+            }\only<3-> {
+                \pgfnodebox{BRsG}[virtual]{\pgfpolar{120}{12mm}}{\BRsG}{1.5pt}{1.5pt}
+                \pgfnodebox{RsGsB}[virtual]{\pgfpolar{0}{0cm}}{\RsGsB}{1.5pt}{1.5pt}
+            }
+            \only<-3> {
+                \pgfnodebox{GBR}[virtual]{\pgfpolar{130}{24mm}}{\GBRt}{1.5pt}{1.5pt}
+            }\only<4-> {
+                \pgfnodebox{GBR}[virtual]{\pgfpolar{130}{24mm}}{\GBR}{1.5pt}{1.5pt}
+            }
+            \only<-4> {
+                \pgfnodebox{GRsB}[virtual]{\pgfpolar{300}{12mm}}{\GRsBt}{1.5pt}{1.5pt}
+                \pgfnodebox{BGR}[virtual]{\pgfpolar{310}{24mm}}{\BGRt}{1.5pt}{1.5pt}
+            }\only<5-> {
+                \pgfnodebox{GRsB}[virtual]{\pgfpolar{300}{12mm}}{\GRsB}{1.5pt}{1.5pt}
+                \pgfnodebox{BGR}[virtual]{\pgfpolar{310}{24mm}}{\BGR}{1.5pt}{1.5pt}
+            }
+            \pgfnodebox{RGsB}[virtual]{\pgfpolar{0}{12mm}}{\RGsBt}{1.5pt}{1.5pt}
+            \pgfnodebox{RBsG}[virtual]{\pgfpolar{60}{12mm}}{\RBsGt}{1.5pt}{1.5pt}
+            \pgfnodebox{RsGB}[virtual]{\pgfpolar{240}{12mm}}{\RsGBt}{1.5pt}{1.5pt}
+            \pgfnodebox{BRG}[virtual]{\pgfpolar{0}{24mm}}{\BRGt}{1.5pt}{1.5pt}
+            \pgfnodebox{GRB}[virtual]{\pgfpolar{50}{24mm}}{\GRBt}{1.5pt}{1.5pt}
+            \pgfnodebox{RGB}[virtual]{\pgfpolar{230}{24mm}}{\RGBt}{1.5pt}{1.5pt}
+    
+            \only<-1> {
+                \pgfsetstrokecolor{lightgray}
+                \pgfnodeconnline{RsBG}{RBG}
+            }\only<2-> {
+                \pgfsetstrokecolor{black}
+                \pgfnodeconnline{RsBG}{RBG}
+            }
+            \only<-2> {
+                \pgfsetstrokecolor{lightgray}
+                \pgfnodeconnline{BRsG}{RsBG}
+                \pgfnodeconnline{RsGsB}{RsBG}
+            }\only<3-> {
+                \pgfsetstrokecolor{black}
+                \pgfnodeconnline{BRsG}{RsBG}
+                \pgfnodeconnline{RsGsB}{RsBG}
+            }
+            \only<-3> {
+                \pgfsetstrokecolor{lightgray}
+                \pgfnodeconnline{BRsG}{GBR}
+            }\only<4-> {
+                \pgfsetstrokecolor{black}
+                \pgfnodeconnline{BRsG}{GBR}
+            }
+            \only<-4> {
+                \pgfsetstrokecolor{lightgray}
+                \pgfnodeconnline{RsGsB}{GRsB}
+                \pgfnodeconnline{GRsB}{BGR}
+            }\only<5-> {
+                \pgfsetstrokecolor{black}
+                \pgfnodeconnline{RsGsB}{GRsB}
+                \pgfnodeconnline{GRsB}{BGR}
+            }
+            \pgfsetstrokecolor{lightgray}
+            \pgfnodeconnline{RsGsB}{RGsB}
+            \pgfnodeconnline{RsGsB}{RBsG}
+            \pgfnodeconnline{RsGsB}{BRsG}
+            \pgfnodeconnline{RsGsB}{RsGB}
+            \pgfnodeconnline{RGsB}{BRG}
+            \pgfnodeconnline{RBsG}{GRB}
+            \pgfnodeconnline{RsGB}{RGB}
+            \pgfnodeconnline{RGsB}{RBsG}
+            \pgfnodeconnline{RsGB}{GRsB}
+        \end{pgfpicture}
+    \end{column}
+\end{columns}
 \end{frame}
 
 \subsection{Regression Limit}
 
 \begin{frame}{Regression Limit}
-When to stop a rollout?
-
-\bigskip \pause
+\large When to stop a rollout?
+\normalsize
 
 \begin{itemize}
     \item Stop after reaching some maximum limit $L$ of samples.
-    \pause
     \begin{itemize}
-        \item \textcite{Yu.etal/2020, OToole/2022} use fixed maximum limit, $200$ and $500$ (resp.).
+        \item \citet{yu2020learning, otoole2022sampling} use fixed maximum limit, $200$ and $500$ (resp.).
     \end{itemize}
-    \pause
+    \bigskip
     \item A fixed maximum limit $L$ is not a good choice for regression sampling.
     \begin{itemize}
-        \pause
-        \item Planning tasks vary in state space size and maximum distance~\distfarthest from any state to a goal state.
-%        \pause
-%        \item If $L$ overestimates \distfarthest by much: cost-to-goal estimates will be too large.
-%        \pause
-%        \item If $L$ underestimates \distfarthest: samples may be concentrated too close to the goal.
+        \item Planning tasks vary in state space size and maximum distance~\ssdiameter from any state to a goal state.
     \end{itemize}
 \end{itemize}
 \end{frame}
 
-\begin{frame}{\distfarthest-value}
-\begin{itemize}
-    \item What is the \distfarthest-value of the state space below?
-\end{itemize}
+\begin{frame}{Regression Limit}
 \bigskip
-\begin{center}
-\only<1> {
-\begin{tikzpicture}
-[
-    node distance=12mm and 17mm, on grid, auto, label distance=-0.5mm,
-    black_node/.style={circle, draw=black!100, fill=black!0, very thick, minimum height=8mm, minimum width=8mm},
-]
-    \node[black_node, accepting] (goal) {\footnotesize$s^*$} ;
-    \node[black_node] (s1) [right = of goal] {\footnotesize$s_{1}$} ;
-    \node[black_node] (s2) [right = of s1] {\footnotesize$s_{2}$} ;
-    \node[black_node] (s3) [right = of s2] {\footnotesize$s_{3}$} ;
-    \node[black_node] (s4) [right = of s3] {\footnotesize$s_{4}$} ;
-    \node[black_node] (s5) [below = of goal] {\footnotesize$s_{5}$} ;
-    \node[black_node] (s6) [below = of s1] {\footnotesize$s_{6}$} ;
-    \node[black_node] (s7) [below = of s3] {\footnotesize$s_{7}$} ;
-    \node[black_node] (s8) [below = of s6] {\footnotesize$s_{8}$} ;
-    \node[black_node] (s9) [right = of s8] {\footnotesize$s_{9}$} ;
-    \node[black_node] (s10) [right = of s9] {\footnotesize$s_{10}$} ;
-    \node[black_node] (s11) [right = of s10] {\footnotesize$s_{11}$} ;
-    \draw[->, line width=0.3mm, color=black] (s1) -- (goal) ;
-    \draw[->, line width=0.3mm, color=black] (s2) -- (s1) ;
-    \draw[->, line width=0.3mm, color=black] (s3) -- (s2) ;
-    \draw[->, line width=0.3mm, color=black] (s4) -- (s3) ;
-    \draw[->, line width=0.3mm, color=black] (s7) -- (s4) ;
-    \draw[->, line width=0.3mm, color=black] (s11) -- (s7) ;
-    \draw[->, line width=0.3mm, color=black] (s6) -- (goal) ;
-    \draw[->, line width=0.3mm, color=black] (s9) -- (s6) ;
-    \draw[->, line width=0.3mm, color=black] (s10) -- (s9) ;
-    \draw[->, line width=0.3mm, color=black] (s11) -- (s10) ;
-    \draw[->, line width=0.3mm, color=black] (s5) -- (goal) ;
-    \draw[->, line width=0.3mm, color=black] (s8) -- (s5) ;
-    \draw[->, line width=0.3mm, color=black] (s9) -- (s8) ;
-    \draw[->, line width=0.3mm, color=black] (s9) -- (s6) ;
-    \draw[->, line width=0.3mm, color=black] (7.6,-2.4) -- (s11) ;
-\end{tikzpicture}
-}
-\only<2> {
-\begin{tikzpicture}
-[
-    node distance=12mm and 17mm, on grid, auto, label distance=-0.5mm,
-    black_node/.style={circle, draw=black!100, fill=black!0, very thick, minimum height=8mm, minimum width=8mm},
-    red_node/.style={circle, draw=red!100, fill=red!0, very thick, minimum height=8mm, minimum width=8mm},
-]
-    \node[red_node, accepting, label=above right:{\footnotesize$0$}] (goal) {\footnotesize$s^*$} ;
-    \node[red_node, label=above right:{\footnotesize$1$}] (s1) [right = of goal] {\footnotesize$s_{1}$} ;
-    \node[red_node, label=above right:{\footnotesize$2$}] (s2) [right = of s1] {\footnotesize$s_{2}$} ;
-    \node[red_node, label=above right:{\footnotesize$3$}] (s3) [right = of s2] {\footnotesize$s_{3}$} ;
-    \node[red_node, label=above right:{\footnotesize$4$}] (s4) [right = of s3] {\footnotesize$s_{4}$} ;
-    \node[black_node, label=above right:{\footnotesize$1$}] (s5) [below = of goal] {\footnotesize$s_{5}$} ;
-    \node[black_node, label=above right:{\footnotesize$1$}] (s6) [below = of s1] {\footnotesize$s_{6}$} ;
-    \node[red_node, label=above left:{\footnotesize$5$}] (s7) [below = of s3] {\footnotesize$s_{7}$} ;
-    \node[black_node, label=above right:{\footnotesize$2$}] (s8) [below = of s6] {\footnotesize$s_{8}$} ;
-    \node[black_node, label=above right:{\footnotesize$2$}] (s9) [right = of s8] {\footnotesize$s_{9}$} ;
-    \node[black_node, label=above right:{\footnotesize$3$}] (s10) [right = of s9] {\footnotesize$s_{10}$} ;
-    \node[black_node, label=above right:{\footnotesize$4$}] (s11) [right = of s10] {\footnotesize$s_{11}$} ;
-    \draw[->, line width=0.3mm, color=red] (s1) -- (goal) ;
-    \draw[->, line width=0.3mm, color=red] (s2) -- (s1) ;
-    \draw[->, line width=0.3mm, color=red] (s3) -- (s2) ;
-    \draw[->, line width=0.3mm, color=red] (s4) -- (s3) ;
-    \draw[->, line width=0.3mm, color=red] (s7) -- (s4) ;
-    \draw[->, line width=0.3mm, color=black] (s11) -- (s7) ;
-    \draw[->, line width=0.3mm, color=black] (s6) -- (goal) ;
-    \draw[->, line width=0.3mm, color=black] (s9) -- (s6) ;
-    \draw[->, line width=0.3mm, color=black] (s10) -- (s9) ;
-    \draw[->, line width=0.3mm, color=black] (s11) -- (s10) ;
-    \draw[->, line width=0.3mm, color=black] (s5) -- (goal) ;
-    \draw[->, line width=0.3mm, color=black] (s8) -- (s5) ;
-    \draw[->, line width=0.3mm, color=black] (s9) -- (s8) ;
-    \draw[->, line width=0.3mm, color=black] (s9) -- (s6) ;
-    \draw[->, line width=0.3mm, color=black] (7.6,-2.4) -- (s11) ;
-\end{tikzpicture}
-}
-\end{center}
-\pause
-\begin{itemize}
-    \item $\distfarthest=5$ from $s_7$.
-    \begin{itemize}
-        \item Regardless of the cost of operators!
-    \end{itemize}
-\end{itemize}
+\begin{columns}
+    \begin{column}{0.5\textwidth}
+        \begin{pgfpicture}{-29.25mm}{-24.3mm}{29.25mm}{24.3mm}
+            \pgfnodebox{RBG}[virtual]{\pgfpolar{180}{24mm}}{\RBG}{1.5pt}{1.5pt}
+            \pgfnodebox{RsBG}[virtual]{\pgfpolar{180}{12mm}}{\RsBG}{1.5pt}{1.5pt}
+            \pgfnodebox{BRsG}[virtual]{\pgfpolar{120}{12mm}}{\BRsGt}{1.5pt}{1.5pt}
+            \pgfnodebox{RsGsB}[virtual]{\pgfpolar{0}{0cm}}{\RsGsB}{1.5pt}{1.5pt}
+            \pgfnodebox{GBR}[virtual]{\pgfpolar{130}{24mm}}{\GBRt}{1.5pt}{1.5pt}
+            \pgfnodebox{GRsB}[virtual]{\pgfpolar{300}{12mm}}{\GRsBt}{1.5pt}{1.5pt}
+            \pgfnodebox{BGR}[virtual]{\pgfpolar{310}{24mm}}{\BGRt}{1.5pt}{1.5pt}
+            \pgfnodebox{RGsB}[virtual]{\pgfpolar{0}{12mm}}{\RGsBt}{1.5pt}{1.5pt}
+            \pgfnodebox{RBsG}[virtual]{\pgfpolar{60}{12mm}}{\RBsG}{1.5pt}{1.5pt}
+            \pgfnodebox{RsGB}[virtual]{\pgfpolar{240}{12mm}}{\RsGBt}{1.5pt}{1.5pt}
+            \pgfnodebox{BRG}[virtual]{\pgfpolar{0}{24mm}}{\BRGt}{1.5pt}{1.5pt}
+            \pgfnodebox{GRB}[virtual]{\pgfpolar{50}{24mm}}{\GRBt}{1.5pt}{1.5pt}
+            \pgfnodebox{RGB}[virtual]{\pgfpolar{230}{24mm}}{\RGBt}{1.5pt}{1.5pt}
+            \pgfsetstrokecolor{lightgray}
+            \pgfnodeconnline{BRsG}{RsBG}
+            \pgfnodeconnline{BRsG}{GBR}
+            \pgfnodeconnline{RsGsB}{GRsB}
+            \pgfnodeconnline{GRsB}{BGR}
+            \pgfnodeconnline{RsGsB}{RGsB}
+            \pgfnodeconnline{RsGsB}{BRsG}
+            \pgfnodeconnline{RsGsB}{RsGB}
+            \pgfnodeconnline{RGsB}{BRG}
+            \pgfnodeconnline{RBsG}{GRB}
+            \pgfnodeconnline{RsGB}{RGB}
+            \pgfnodeconnline{RGsB}{RBsG}
+            \pgfnodeconnline{RsGB}{GRsB}
+            \pgfsetarrowsend{Triangle[scale=0.8pt]}
+            \pgfsetstrokecolor{black}
+            \pgfnodeconnline{RBG}{RsBG}
+            \pgfnodeconnline{RsBG}{RsGsB}
+            \pgfnodeconnline{RsGsB}{RBsG}
+        \end{pgfpicture}
+        
+        \bigskip \bigskip \centering If $L$ underestimates \ssdiameter
+    \end{column}
+    \begin{column}{0.5\textwidth}
+        \begin{pgfpicture}{-29.25mm}{-24.3mm}{29.25mm}{24.3mm}
+            \pgfnodebox{RBG}[virtual]{\pgfpolar{180}{24mm}}{\RBG}{1.5pt}{1.5pt}
+            \pgfnodebox{RsBG}[virtual]{\pgfpolar{180}{12mm}}{\RsBG}{1.5pt}{1.5pt}
+            \pgfnodebox{BRsG}[virtual]{\pgfpolar{120}{12mm}}{\BRsGt}{1.5pt}{1.5pt}
+            \pgfnodebox{RsGsB}[virtual]{\pgfpolar{0}{0cm}}{\RsGsB}{1.5pt}{1.5pt}
+            \pgfnodebox{GBR}[virtual]{\pgfpolar{130}{24mm}}{\GBRt}{1.5pt}{1.5pt}
+            \pgfnodebox{GRsB}[virtual]{\pgfpolar{300}{12mm}}{\GRsBt}{1.5pt}{1.5pt}
+            \pgfnodebox{BGR}[virtual]{\pgfpolar{310}{24mm}}{\BGRt}{1.5pt}{1.5pt}
+            \pgfnodebox{RGsB}[virtual]{\pgfpolar{0}{12mm}}{\RGsB}{1.5pt}{1.5pt}
+            \pgfnodebox{RBsG}[virtual]{\pgfpolar{60}{12mm}}{\RBsG}{1.5pt}{1.5pt}
+            \pgfnodebox{RsGB}[virtual]{\pgfpolar{240}{12mm}}{\RsGBt}{1.5pt}{1.5pt}
+            \pgfnodebox{BRG}[virtual]{\pgfpolar{0}{24mm}}{\BRGt}{1.5pt}{1.5pt}
+            \pgfnodebox{GRB}[virtual]{\pgfpolar{50}{24mm}}{\GRB}{1.5pt}{1.5pt}
+            \pgfnodebox{RGB}[virtual]{\pgfpolar{230}{24mm}}{\RGBt}{1.5pt}{1.5pt}
+            \pgfsetstrokecolor{lightgray}
+            \pgfnodeconnline{BRsG}{RsBG}
+            \pgfnodeconnline{BRsG}{GBR}
+            \pgfnodeconnline{RsGsB}{GRsB}
+            \pgfnodeconnline{GRsB}{BGR}
+            \pgfnodeconnline{RsGsB}{RGsB}
+            \pgfnodeconnline{RsGsB}{BRsG}
+            \pgfnodeconnline{RsGsB}{RsGB}
+            \pgfnodeconnline{RGsB}{BRG}
+            \pgfnodeconnline{RsGB}{RGB}
+            \pgfnodeconnline{RsGB}{GRsB}
+            \pgfsetarrowsend{Triangle[scale=0.8pt]}
+            \pgfsetstrokecolor{black}
+            \pgfnodeconnline{RBG}{RsBG}
+            \pgfnodeconnline{RsBG}{RsGsB}
+            \pgfnodeconnline{RsGsB}{RBsG}
+            \pgfnodeconnline{RBsG}{GRB}
+            \pgfnodeconnline{GRB}{RBsG}
+            \pgfnodeconnline{RBsG}{RGsB}
+        \end{pgfpicture}
+        
+        \bigskip \bigskip \centering If $L$ overestimates \ssdiameter by much
+    \end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}{Adaptative Regression Limit}
-\begin{itemize}
-    \item The ideal approach is a regression limit based on \distfarthest.
-    \pause
-    \begin{itemize}
-        \item \distfarthest is unknown.
-    \end{itemize}
-    \pause
-    \item Alternatively we can use task information.
-    \bigskip \pause
-    \item \textbf{Our proposals:} estimates the \distfarthest-value.
-    \begin{itemize}
-        \pause
-        \item Number of facts: $\facts=|\mathcal{F}(s_0)|$
-        \pause
-        \item Number of facts per mean number of effects in the operators: $\meanfx=\ceil{L_F/\overline{\eff}}$ where $\overline{\eff}=\sum_{o\in \mathcal{O}} |\eff(o)|/|\mathcal{O}|$
-    \end{itemize}
-\end{itemize}
+The ideal approach is a regression limit based on \ssdiameter.
+\bigskip
+
+\textbf{Our proposals:} estimates the \ssdiameter-value from task information.
+
+\bigskip
+
+\begin{columns}
+    \begin{column}{0.4\textwidth}
+        \centering Number of facts
+
+        \bigskip \centering \large $\facts=|\mathcal{F}(s_0)|$
+    \end{column}
+    \begin{column}{0.6\textwidth}
+        \centering Number of facts per mean number of effects in the operators
+
+        \bigskip \centering \large $\bar F=\ceil{\frac{|\mathcal{F}(s_0)|}{\sum_{o\in \mathcal{O}} \frac{|\text{eff}(o)|}{|\mathcal{O}|}}}$
+    \end{column}
+\end{columns}
 \end{frame}
 
 \subsection{Randomly Generated Samples}
 
 \begin{frame}{Randomly Generated Samples}
+
 \begin{itemize}
     \item Regression may have difficulty reaching certain regions.
-    \pause
     \item Randomly generated samples (\alert{random samples}) provide uniform coverage across the entire state space.
-    \pause
-    \item Adding random samples to the set of samples improves the performance of the learned heuristic \parencite{OToole/2022}.
+    \bigskip
+    \item Adding random samples to the set of samples improves the performance of the learned heuristic \citep{otoole2022sampling}.
     \begin{itemize}
         \item Generate a random state $s$ with cost-to-goal estimate $h(s) = max(H)+1$, where $H$ is the set of all cost-to-goal estimates in the original sample set.
     \end{itemize}
@@ -507,405 +559,46 @@ When to stop a rollout?
 \section{Cost-to-goal Estimates}
 
 \begin{frame}{Cost-to-goal Estimates}
-\begin{itemize}
-    \item Based solely on the sampled rollout.
+Based solely on the sampled rollout.
 
-    \bigskip \pause
-    
-    \item How to improve?
-    \begin{itemize}
-        \item Use knowledge of all rollouts to update the sampled cost-to-goal estimate.
-    \end{itemize}
+\bigskip
+
+How to improve?
+\begin{itemize}
+    \item Use knowledge of all rollouts to update the sampled cost-to-goal estimate.
 \end{itemize}
 \end{frame}
-
 
 \subsection{Repeated Samples}
 
 \begin{frame}{Sample Improvement}
 \begin{itemize}
     \item A same state can be sampled by more than one rollout.
-    \pause
     \item Repeated states can have different cost-to-goal estimates.
     \begin{itemize}
         \item Misinformation for NN learning.
     \end{itemize}
 \end{itemize}
-\bigskip \pause
-\begin{itemize}
-    \item \textbf{Our proposal:} for each sampled state $s$, update its cost-to-goal estimate to $h(s) = \min\{h_i \mid s=s_i, i\in[N]\}$.
-    \begin{itemize}
-        \item Never underestimate the perfect estimate $h^*$.
-        \item This approach is called \alert{sample improvement} (SAI).
-    \end{itemize}
-\end{itemize}
-\end{frame}
 
-\begin{frame}{Sample Improvement}
-\begin{columns}
-\begin{column}{0.5\textwidth}
-\centering
-\only<1> {
-    \begin{tikzpicture}
-    [
-        node distance=21mm and 22mm, on grid, auto, label distance=-0.5mm,
-        black_node/.style={circle, draw=black!100, fill=black!0, very thick, minimum height=8mm, minimum width=8mm},
-        red_node/.style={circle, draw=red!100, fill=red!0, very thick, minimum height=8mm, minimum width=8mm},
-    ]
-        \node[black_node, accepting] (goal) {\footnotesize$s^*$} ;
-        \node[black_node] (s1) [right = of goal] {\footnotesize$s_{1}$} ;
-        \node[black_node] (s2) [right = of s1] {\footnotesize$s_{2}$} ;
-        \node[black_node] (s3) [below = of goal] {\footnotesize$s_{3}$} ;
-        \node[black_node] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
-        \node[black_node] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
-        \node[black_node] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
-        \draw[->, line width=0.3mm, color=black] (s1) -- (goal) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s3) -- (goal) ;
-        \draw[->, line width=0.3mm, color=black] (s6) -- (s3) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s6) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s2) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (4.4,-2.9) -- (s5) ;
-    \end{tikzpicture}
-}
-\only<2> {
-    \begin{tikzpicture}
-    [
-        node distance=21mm and 22mm, on grid, auto, label distance=-0.5mm,
-        black_node/.style={circle, draw=black!100, fill=black!0, very thick, minimum height=8mm, minimum width=8mm},
-        red_node/.style={circle, draw=red!100, fill=red!0, very thick, minimum height=8mm, minimum width=8mm},
-    ]
-        \node[red_node, accepting, label=above:{\footnotesize$0$}] (goal) {\footnotesize$s^*$} ;
-        \node[red_node, label=above:{\footnotesize$1$}] (s1) [right = of goal] {\footnotesize$s_{1}$} ;
-        \node[black_node] (s2) [right = of s1] {\footnotesize$s_{2}$} ;
-        \node[black_node] (s3) [below = of goal] {\footnotesize$s_{3}$} ;
-        \node[black_node] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
-        \node[black_node] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
-        \node[black_node] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
-        \draw[->, line width=0.3mm, color=red] (s1) -- (goal) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s3) -- (goal) ;
-        \draw[->, line width=0.3mm, color=black] (s6) -- (s3) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s6) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s2) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (4.4,-2.9) -- (s5) ;
-    \end{tikzpicture}
-}
-\only<3> {
-    \begin{tikzpicture}
-    [
-        node distance=21mm and 22mm, on grid, auto, label distance=-0.5mm,
-        black_node/.style={circle, draw=black!100, fill=black!0, very thick, minimum height=8mm, minimum width=8mm},
-        red_node/.style={circle, draw=red!100, fill=red!0, very thick, minimum height=8mm, minimum width=8mm},
-    ]
-        \node[red_node, accepting, label=above:{\footnotesize$0$}] (goal) {\footnotesize$s^*$} ;
-        \node[red_node, label=above:{\footnotesize$1$}] (s1) [right = of goal] {\footnotesize$s_{1}$} ;
-        \node[red_node, label=above:{\footnotesize$2$}] (s2) [right = of s1] {\footnotesize$s_{2}$} ;
-        \node[black_node] (s3) [below = of goal] {\footnotesize$s_{3}$} ;
-        \node[black_node] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
-        \node[black_node] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
-        \node[black_node] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
-        \draw[->, line width=0.3mm, color=red] (s1) -- (goal) ;
-        \draw[->, line width=0.3mm, color=red] (s2) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s3) -- (goal) ;
-        \draw[->, line width=0.3mm, color=black] (s6) -- (s3) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s6) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s2) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (4.4,-2.9) -- (s5) ;
-    \end{tikzpicture}
-}
-\only<4> {
-    \begin{tikzpicture}
-    [
-        node distance=21mm and 22mm, on grid, auto, label distance=-0.5mm,
-        black_node/.style={circle, draw=black!100, fill=black!0, very thick, minimum height=8mm, minimum width=8mm},
-        red_node/.style={circle, draw=red!100, fill=red!0, very thick, minimum height=8mm, minimum width=8mm},
-    ]
-        \node[red_node, accepting, label=above:{\footnotesize$0$}] (goal) {\footnotesize$s^*$} ;
-        \node[red_node, label=above:{\footnotesize$1$}] (s1) [right = of goal] {\footnotesize$s_{1}$} ;
-        \node[red_node, label=above:{\footnotesize$2$}] (s2) [right = of s1] {\footnotesize$s_{2}$} ;
-        \node[black_node] (s3) [below = of goal] {\footnotesize$s_{3}$} ;
-        \node[black_node] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
-        \node[red_node, label=right:{\footnotesize$3$}] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
-        \node[black_node] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
-        \draw[->, line width=0.3mm, color=red] (s1) -- (goal) ;
-        \draw[->, line width=0.3mm, color=red] (s2) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s3) -- (goal) ;
-        \draw[->, line width=0.3mm, color=black] (s6) -- (s3) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s6) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s4) ;
-        \draw[->, line width=0.3mm, color=red] (s5) -- (s2) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (4.4,-2.9) -- (s5) ;
-    \end{tikzpicture}
-}
-\only<5> {
-    \begin{tikzpicture}
-    [
-        node distance=21mm and 22mm, on grid, auto, label distance=-0.5mm,
-        black_node/.style={circle, draw=black!100, fill=black!0, very thick, minimum height=8mm, minimum width=8mm},
-        red_node/.style={circle, draw=red!100, fill=red!0, very thick, minimum height=8mm, minimum width=8mm},
-    ]
-        \node[red_node, accepting, label=above:{\footnotesize$0$}] (goal) {\footnotesize$s^*$} ;
-        \node[red_node, label=above:{\footnotesize$1$}] (s1) [right = of goal] {\footnotesize$s_{1}$} ;
-        \node[red_node, label=above:{\footnotesize$2$}] (s2) [right = of s1] {\footnotesize$s_{2}$} ;
-        \node[black_node] (s3) [below = of goal] {\footnotesize$s_{3}$} ;
-        \node[red_node, label=below:{\footnotesize$4$}] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
-        \node[red_node, label=right:{\footnotesize$3$}] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
-        \node[black_node] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
-        \draw[->, line width=0.3mm, color=red] (s1) -- (goal) ;
-        \draw[->, line width=0.3mm, color=red] (s2) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s3) -- (goal) ;
-        \draw[->, line width=0.3mm, color=black] (s6) -- (s3) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s6) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s4) ;
-        \draw[->, line width=0.3mm, color=red] (s5) -- (s2) ;
-        \draw[->, line width=0.3mm, color=red] (s5) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (4.4,-2.9) -- (s5) ;
-    \end{tikzpicture}
-}
-\only<6> {
-    \begin{tikzpicture}
-    [
-        node distance=21mm and 22mm, on grid, auto, label distance=-0.5mm,
-        black_node/.style={circle, draw=black!100, fill=black!0, very thick, minimum height=8mm, minimum width=8mm},
-        red_node/.style={circle, draw=red!100, fill=red!0, very thick, minimum height=8mm, minimum width=8mm},
-    ]
-        \node[red_node, accepting, label=above:{\footnotesize$0$}] (goal) {\footnotesize$s^*$} ;
-        \node[red_node, label=above:{\footnotesize$1$}] (s1) [right = of goal] {\footnotesize$s_{1}$} ;
-        \node[red_node, label=above:{\footnotesize$2$}] (s2) [right = of s1] {\footnotesize$s_{2}$} ;
-        \node[black_node] (s3) [below = of goal] {\footnotesize$s_{3}$} ;
-        \node[red_node, label=below:{\footnotesize$4$}] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
-        \node[red_node, label=right:{\footnotesize$3$}] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
-        \node[red_node, label=below:{\footnotesize$5$}] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
-        \draw[->, line width=0.3mm, color=red] (s1) -- (goal) ;
-        \draw[->, line width=0.3mm, color=red] (s2) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s3) -- (goal) ;
-        \draw[->, line width=0.3mm, color=black] (s6) -- (s3) ;
-        \draw[->, line width=0.3mm, color=red] (s4) -- (s6) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s4) ;
-        \draw[->, line width=0.3mm, color=red] (s5) -- (s2) ;
-        \draw[->, line width=0.3mm, color=red] (s5) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (4.4,-2.9) -- (s5) ;
-    \end{tikzpicture}
-}
-\only<7> {
-    \begin{tikzpicture}
-    [
-        node distance=21mm and 22mm, on grid, auto, label distance=-0.5mm,
-        black_node/.style={circle, draw=black!100, fill=black!0, very thick, minimum height=8mm, minimum width=8mm},
-        red_node/.style={circle, draw=red!100, fill=red!0, very thick, minimum height=8mm, minimum width=8mm},
-    ]
-        \node[red_node, accepting, label=above:{\footnotesize$0$}] (goal) {\footnotesize$s^*$} ;
-        \node[black_node] (s1) [right = of goal] {\footnotesize$s_{1}$} ;
-        \node[black_node] (s2) [right = of s1] {\footnotesize$s_{2}$} ;
-        \node[red_node, label=left:{\footnotesize$1$}] (s3) [below = of goal] {\footnotesize$s_{3}$} ;
-        \node[black_node] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
-        \node[black_node] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
-        \node[black_node] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
-        \draw[->, line width=0.3mm, color=black] (s1) -- (goal) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s1) ;
-        \draw[->, line width=0.3mm, color=red] (s3) -- (goal) ;
-        \draw[->, line width=0.3mm, color=black] (s6) -- (s3) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s6) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s2) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (4.4,-2.9) -- (s5) ;
-    \end{tikzpicture}
-}
-\only<8> {
-    \begin{tikzpicture}
-    [
-        node distance=21mm and 22mm, on grid, auto, label distance=-0.5mm,
-        black_node/.style={circle, draw=black!100, fill=black!0, very thick, minimum height=8mm, minimum width=8mm},
-        red_node/.style={circle, draw=red!100, fill=red!0, very thick, minimum height=8mm, minimum width=8mm},
-    ]
-        \node[red_node, accepting, label=above:{\footnotesize$0$}] (goal) {\footnotesize$s^*$} ;
-        \node[black_node] (s1) [right = of goal] {\footnotesize$s_{1}$} ;
-        \node[black_node] (s2) [right = of s1] {\footnotesize$s_{2}$} ;
-        \node[red_node, label=left:{\footnotesize$1$}] (s3) [below = of goal] {\footnotesize$s_{3}$} ;
-        \node[black_node] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
-        \node[black_node] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
-        \node[red_node, label=left:{\footnotesize$2$}] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
-        \draw[->, line width=0.3mm, color=black] (s1) -- (goal) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s1) ;
-        \draw[->, line width=0.3mm, color=red] (s3) -- (goal) ;
-        \draw[->, line width=0.3mm, color=red] (s6) -- (s3) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s6) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s2) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (4.4,-2.9) -- (s5) ;
-    \end{tikzpicture}
-}
-\only<9> {
-    \begin{tikzpicture}
-    [
-        node distance=21mm and 22mm, on grid, auto, label distance=-0.5mm,
-        black_node/.style={circle, draw=black!100, fill=black!0, very thick, minimum height=8mm, minimum width=8mm},
-        red_node/.style={circle, draw=red!100, fill=red!0, very thick, minimum height=8mm, minimum width=8mm},
-    ]
-        \node[red_node, accepting, label=above:{\footnotesize$0$}] (goal) {\footnotesize$s^*$} ;
-        \node[black_node] (s1) [right = of goal] {\footnotesize$s_{1}$} ;
-        \node[black_node] (s2) [right = of s1] {\footnotesize$s_{2}$} ;
-        \node[red_node, label=left:{\footnotesize$1$}] (s3) [below = of goal] {\footnotesize$s_{3}$} ;
-        \node[red_node, label=below:{\footnotesize$3$}] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
-        \node[black_node] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
-        \node[red_node, label=left:{\footnotesize$2$}] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
-        \draw[->, line width=0.3mm, color=black] (s1) -- (goal) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s1) ;
-        \draw[->, line width=0.3mm, color=red] (s3) -- (goal) ;
-        \draw[->, line width=0.3mm, color=red] (s6) -- (s3) ;
-        \draw[->, line width=0.3mm, color=red] (s4) -- (s6) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s2) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (4.4,-2.9) -- (s5) ;
-    \end{tikzpicture}
-}
-\only<10> {
-    \begin{tikzpicture}
-    [
-        node distance=21mm and 22mm, on grid, auto, label distance=-0.5mm,
-        black_node/.style={circle, draw=black!100, fill=black!0, very thick, minimum height=8mm, minimum width=8mm},
-        red_node/.style={circle, draw=red!100, fill=red!0, very thick, minimum height=8mm, minimum width=8mm},
-    ]
-        \node[red_node, accepting, label=above:{\footnotesize$0$}] (goal) {\footnotesize$s^*$} ;
-        \node[red_node, label=above:{\footnotesize$4$}] (s1) [right = of goal] {\footnotesize$s_{1}$} ;
-        \node[black_node] (s2) [right = of s1] {\footnotesize$s_{2}$} ;
-        \node[red_node, label=left:{\footnotesize$1$}] (s3) [below = of goal] {\footnotesize$s_{3}$} ;
-        \node[red_node, label=below:{\footnotesize$3$}] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
-        \node[black_node] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
-        \node[red_node, label=left:{\footnotesize$2$}] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
-        \draw[->, line width=0.3mm, color=black] (s1) -- (goal) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s1) ;
-        \draw[->, line width=0.3mm, color=red] (s3) -- (goal) ;
-        \draw[->, line width=0.3mm, color=red] (s6) -- (s3) ;
-        \draw[->, line width=0.3mm, color=red] (s4) -- (s6) ;
-        \draw[->, line width=0.3mm, color=red] (s4) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s2) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (4.4,-2.9) -- (s5) ;
-    \end{tikzpicture}
-}
-\only<11> {
-    \begin{tikzpicture}
-    [
-        node distance=21mm and 22mm, on grid, auto, label distance=-0.5mm,
-        black_node/.style={circle, draw=black!100, fill=black!0, very thick, minimum height=8mm, minimum width=8mm},
-        red_node/.style={circle, draw=red!100, fill=red!0, very thick, minimum height=8mm, minimum width=8mm},
-    ]
-        \node[red_node, accepting, label=above:{\footnotesize$0$}] (goal) {\footnotesize$s^*$} ;
-        \node[red_node, label=above:{\footnotesize$4$}] (s1) [right = of goal] {\footnotesize$s_{1}$} ;
-        \node[red_node, label=above:{\footnotesize$5$}] (s2) [right = of s1] {\footnotesize$s_{2}$} ;
-        \node[red_node, label=left:{\footnotesize$1$}] (s3) [below = of goal] {\footnotesize$s_{3}$} ;
-        \node[red_node, label=below:{\footnotesize$3$}] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
-        \node[black_node] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
-        \node[red_node, label=left:{\footnotesize$2$}] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
-        \draw[->, line width=0.3mm, color=black] (s1) -- (goal) ;
-        \draw[->, line width=0.3mm, color=red] (s2) -- (s1) ;
-        \draw[->, line width=0.3mm, color=red] (s3) -- (goal) ;
-        \draw[->, line width=0.3mm, color=red] (s6) -- (s3) ;
-        \draw[->, line width=0.3mm, color=red] (s4) -- (s6) ;
-        \draw[->, line width=0.3mm, color=red] (s4) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s2) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (4.4,-2.9) -- (s5) ;
-    \end{tikzpicture}
-}
-\only<12> {
+\bigskip
+
+\textbf{Our proposal:} for each sampled state $s$, update its cost-to-goal estimate to $h(s) = \text{min}\{h_i \mid s=s_i, i\in[N]\}$.
 \begin{itemize}
-    \item $h(s^*)=min(0,0)=0$
-    \item $h(s_1)=min(1,4)=1$
-    \item $h(s_2)=min(2,5)=2$
-    \item $h(s_3)=min(1)=1$
-    \item $h(s_4)=min(4,3)=3$
-    \item $h(s_5)=min(3)=3$
-    \item $h(s_6)=min(5,2)=2$
+    \item Never underestimate the perfect estimate \hstar.
+    \item This approach is called \alert{sample improvement} (SAI).
 \end{itemize}
-}
-\end{column}
-\begin{column}{0.5\textwidth}
-\only<1-11> {
-    \begin{itemize}
-        \pause
-        \item Rollout \#1
-        \begin{itemize}
-            \item Sample \#1: $\langle s^*, 0 \rangle$
-            \item Sample \#2: $\langle s_1, 1 \rangle$ \pause
-            \item Sample \#3: $\langle s_2, 2 \rangle$ \pause
-            \item Sample \#4: $\langle s_5, 3 \rangle$ \pause
-            \item Sample \#5: $\langle s_4, 4 \rangle$ \pause
-            \item Sample \#6: $\langle s_6, 5 \rangle$ \pause
-        \end{itemize}
-        \item Rollout \#2
-        \begin{itemize}
-            \item Sample \#7: $\langle s^*, 0 \rangle$
-            \item Sample \#8: $\langle s_3, 1 \rangle$ \pause
-            \item Sample \#9: $\langle s_6, 2 \rangle$ \pause
-            \item Sample \#10: $\langle s_4, 3 \rangle$ \pause
-            \item Sample \#11: $\langle s_1, 4 \rangle$ \pause
-            \item Sample \#12: $\langle s_2, 5 \rangle$
-        \end{itemize}
-    \end{itemize}
-}
-\only<12> {
-    \begin{itemize}
-        \pause
-        \item Rollout \#1
-        \begin{itemize}
-            \item Sample \#1: $\langle s^*, 0 \rangle$
-            \item Sample \#2: $\langle s_1, 1 \rangle$
-            \item Sample \#3: $\langle s_2, 2 \rangle$
-            \item Sample \#4: $\langle s_5, 3 \rangle$
-            \item Sample \#5: $\langle s_4, \text{\cancel{4}}\;\alert{3} \rangle$
-            \item Sample \#6: $\langle s_6, \text{\cancel{5}}\;\alert{2} \rangle$
-        \end{itemize}
-        \item Rollout \#2
-        \begin{itemize}
-            \item Sample \#7: $\langle s^*, 0 \rangle$
-            \item Sample \#8: $\langle s_3, 1 \rangle$
-            \item Sample \#9: $\langle s_6, 2 \rangle$
-            \item Sample \#10: $\langle s_4, 3 \rangle$
-            \item Sample \#11: $\langle s_1, \text{\cancel{4}}\;\alert{1} \rangle$
-            \item Sample \#12: $\langle s_2, \text{\cancel{5}}\;\alert{2} \rangle$
-        \end{itemize}
-    \end{itemize}
-}
-\end{column}
-\end{columns}
 \end{frame}
 
 \subsection{Improvement over Successors}
 
-\begin{frame}{Successors Improvement}
-\begin{itemize}
-    \item Multiple rollouts can generate neighboring (a distance operator) states in state space.
+\begin{frame}{Successor Improvement}
+Multiple rollouts can generate neighboring (a distance operator) states in state space.
 
-    \bigskip \pause
+\bigskip
     
-    \item \textbf{Our proposal:} Connect sampled states that are one operator away to create paths that generate knowledge to improve cost-to-goal estimates.
-    \begin{itemize}
-        \item This approach is called \alert{successors improvement} (SUI).
-    \end{itemize}
+\textbf{Our proposal:} Connect sampled states that are one operator away to create paths that generate knowledge to improve cost-to-goal estimates.
+\begin{itemize}
+    \item This approach is called \alert{successor improvement} (SUI).
 \end{itemize}
 \end{frame}
 
@@ -913,59 +606,61 @@ When to stop a rollout?
 \begin{columns}
 \begin{column}{0.5\textwidth}
 \only<1> {
+    Rollout \#1
     \begin{itemize}
-        \item Rollout \#1
-        \begin{itemize}
-            \item Sample \#1: $\langle s^*, 0 \rangle$
-            \item Sample \#2: $\langle s_3, 1 \rangle$
-            \item Sample \#3: $\langle s_6, 2 \rangle$
-            \item Sample \#4: $\langle s_4, 3 \rangle$
-        \end{itemize}
+        \item Sample \#1: $\langle s^*, 0 \rangle$
+        \item Sample \#2: $\langle s_3, 1 \rangle$
+        \item Sample \#3: $\langle s_6, 2 \rangle$
+        \item Sample \#4: $\langle s_4, 3 \rangle$
     \end{itemize}
 }
 \only<2> {
+    Rollout \#2
     \begin{itemize}
-        \item Rollout \#2
-        \begin{itemize}
-            \item Sample \#5: $\langle s^*, 0 \rangle$
-            \item Sample \#6: $\langle s_1, 1 \rangle$
-            \item Sample \#7: $\langle s_2, 2 \rangle$
-            \item Sample \#8: $\langle s_4, 3 \rangle$
-        \end{itemize}
+        \item Sample \#5: $\langle s^*, 0 \rangle$
+        \item Sample \#6: $\langle s_1, 1 \rangle$
+        \item Sample \#7: $\langle s_2, 2 \rangle$
+        \item Sample \#8: $\langle s_4, 3 \rangle$
     \end{itemize}
 }
 \only<3> {
+    Rollout \#1
     \begin{itemize}
-        \item Rollout \#1
-        \begin{itemize}
-            \item Sample \#1: $\langle s^*, 0 \rangle$
-            \item Sample \#2: $\langle s_3, 1 \rangle$
-            \item Sample \#3: $\langle s_6, 2 \rangle$
-            \item Sample \#4: $\langle s_4, 3 \rangle$
-        \end{itemize}
-        \item Rollout \#2
-        \begin{itemize}
-            \item Sample \#5: $\langle s^*, 0 \rangle$
-            \item Sample \#6: $\langle s_1, 1 \rangle$
-            \item Sample \#7: $\langle s_2, 2 \rangle$
-            \item Sample \#8: $\langle s_4, 3 \rangle$
-        \end{itemize}
+        \item Sample \#1: $\langle s^*, 0 \rangle$
+        \item Sample \#2: $\langle s_3, 1 \rangle$
+        \item Sample \#3: $\langle s_6, 2 \rangle$
+        \item Sample \#4: $\langle s_4, 3 \rangle$
+    \end{itemize}
+    \bigskip
+
+    Rollout \#2
+    \begin{itemize}
+        \item Sample \#5: $\langle s^*, 0 \rangle$
+        \item Sample \#6: $\langle s_1, 1 \rangle$
+        \item Sample \#7: $\langle s_2, 2 \rangle$
+        \item Sample \#8: $\langle s_4, 3 \rangle$
     \end{itemize}
 }
 \only<4> {
-    \begin{itemize}
-        \item (1) Consider a directed graph $G=(V,A)$ over all sampled states, i.e.,~$V=\{s_i\mid i\in[N]\}$.
-    \end{itemize}
+    \begin{enumerate}
+        \item Consider a directed graph $G=(V,A)$ over all sampled states, i.e.,~$V=\{s_i\mid i\in[N]\}$.
+        \item \textcolor{lightgray}{For every pair of states $s,t\in V$ such that for some operator $o\in\mathcal{O}$ applicable to $s$ we have $\text{succ}(s,o)\subseteq t$, we add an arc $(s,t)$ of length $\text{cost}(o)$ to $A$.}
+        \item \textcolor{lightgray}{Propagates the cost-to-goal estimate of each state to its predecessors.}
+    \end{enumerate}
 }
 \only<5> {
-    \begin{itemize}
-        \item (2) For every pair of states $s,t\in V$ such that for some operator $o\in\mathcal{O}$ applicable to $s$ we have $\text{succ}(s,o)\subseteq t$, we add an arc $(s,t)$ of length $\text{cost}(o)$ to $A$.
-    \end{itemize}
+    \begin{enumerate}
+        \item \textcolor{lightgray}{Consider a directed graph $G=(V,A)$ over all sampled states, i.e.,~$V=\{s_i\mid i\in[N]\}$.}
+        \item For every pair of states $s,t\in V$ such that for some operator $o\in\mathcal{O}$ applicable to $s$ we have $\text{succ}(s,o)\subseteq t$, we add an arc $(s,t)$ of length $\text{cost}(o)$ to $A$.
+        \item \textcolor{lightgray}{Propagates the cost-to-goal estimate of each state to its predecessors.}
+    \end{enumerate}
 }
 \only<6> {
-    \begin{itemize}
-        \item (3) Propagates the cost-to-goal estimate of each state to its predecessors.
-    \end{itemize}
+    \begin{enumerate}
+        \item \textcolor{lightgray}{Consider a directed graph $G=(V,A)$ over all sampled states, i.e.,~$V=\{s_i\mid i\in[N]\}$.}
+        \item \textcolor{lightgray}{For every pair of states $s,t\in V$ such that for some operator $o\in\mathcal{O}$ applicable to $s$ we have $\text{succ}(s,o)\subseteq t$, we add an arc $(s,t)$ of length $\text{cost}(o)$ to $A$.}
+        \item Propagates the cost-to-goal estimate of each state to its predecessors.
+    \end{enumerate}
 }
 \end{column}
 \begin{column}{0.5\textwidth}
@@ -974,79 +669,77 @@ When to stop a rollout?
     [
         node distance=21mm and 22mm, on grid, auto, label distance=-0.5mm,
         black_node/.style={circle, draw=black!100, fill=black!0, very thick, minimum height=8mm, minimum width=8mm},
-        red_node/.style={circle, draw=red!100, fill=red!0, very thick, minimum height=8mm, minimum width=8mm},
+        gray_node/.style={circle, draw=lightgray!100, fill=lightgray!0, very thick, minimum height=8mm, minimum width=8mm},
     ]
-        \node[red_node, accepting, label=above:{\footnotesize$0$}] (goal) {\footnotesize$s^*$} ;
-        \node[black_node] (s1) [right = of goal] {\footnotesize$s_{1}$} ;
-        \node[black_node] (s2) [right = of s1] {\footnotesize$s_{2}$} ;
-        \node[red_node, label=left:{\footnotesize$1$}] (s3) [below = of goal] {\footnotesize$s_{3}$} ;
-        \node[red_node, label=below:{\footnotesize$3$}] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
-        \node[black_node] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
-        \node[red_node, label=left:{\footnotesize$2$}] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
-        \draw[->, line width=0.3mm, color=black] (s1) -- (goal) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s1) ;
-        \draw[->, line width=0.3mm, color=red] (s3) -- (goal) ;
-        \draw[->, line width=0.3mm, color=red] (s6) -- (s3) ;
-        \draw[->, line width=0.3mm, color=red] (s4) -- (s6) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s2) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s2) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (4.4,-3) -- (s5) ;
+        \node[black_node, accepting, label=above:{\footnotesize$0$}] (goal) {\footnotesize$s^*$} ;
+        \node[gray_node] (s1) [right = of goal] {\footnotesize$s_{1}$} ;
+        \node[gray_node] (s2) [right = of s1] {\footnotesize$s_{2}$} ;
+        \node[black_node, label=left:{\footnotesize$1$}] (s3) [below = of goal] {\footnotesize$s_{3}$} ;
+        \node[black_node, label=below:{\footnotesize$3$}] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
+        \node[gray_node] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
+        \node[black_node, label=left:{\footnotesize$2$}] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
+        \draw[->, line width=0.3mm, color=lightgray] (s1) to (goal) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s2) to (s1) ;
+        \draw[->, line width=0.3mm, color=black] (s3) to (goal) ;
+        \draw[->, line width=0.3mm, color=black] (s6) to (s3) ;
+        \draw[->, line width=0.3mm, color=black] (s4) to[bend right=5] (s6) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s4) to (s1) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s4) to[bend right=5] (s2) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s5) to (s2) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s5) to (s4) ;
+        \draw[->, line width=0.3mm, color=lightgray] (4.4,-2.9) to (s5) ;
     \end{tikzpicture}
 }
 \only<2> {
     \begin{tikzpicture}
     [
         node distance=21mm and 22mm, on grid, auto, label distance=-0.5mm,
+        lightgray_node/.style={circle, draw=lightgray!100, fill=lightgray!0, very thick, minimum height=8mm, minimum width=8mm},
         black_node/.style={circle, draw=black!100, fill=black!0, very thick, minimum height=8mm, minimum width=8mm},
-        blue_node/.style={circle, draw=blue!100, fill=blue!0, very thick, minimum height=8mm, minimum width=8mm},
     ]
-        \node[blue_node, accepting, label=above:{\footnotesize$0$}] (goal) {\footnotesize$s^*$} ;
-        \node[blue_node, label=above:{\footnotesize$1$}] (s1) [right = of goal] {\footnotesize$s_{1}$} ;
-        \node[blue_node, label=above:{\footnotesize$2$}] (s2) [right = of s1] {\footnotesize$s_{2}$} ;
-        \node[black_node] (s3) [below = of goal] {\footnotesize$s_{3}$} ;
-        \node[blue_node, label=below:{\footnotesize$3$}] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
-        \node[black_node] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
-        \node[black_node] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
-        \draw[->, line width=0.3mm, color=blue] (s1) -- (goal) ;
-        \draw[->, line width=0.3mm, color=blue] (s2) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s3) -- (goal) ;
-        \draw[->, line width=0.3mm, color=black] (s6) -- (s3) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s6) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s1) ;
-        \draw[->, line width=0.3mm, color=blue] (s4) -- (s2) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s2) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (4.4,-3) -- (s5) ;
+        \node[black_node, accepting, label=above:{\footnotesize$0$}] (goal) {\footnotesize$s^*$} ;
+        \node[black_node, label=above:{\footnotesize$1$}] (s1) [right = of goal] {\footnotesize$s_{1}$} ;
+        \node[black_node, label=above:{\footnotesize$2$}] (s2) [right = of s1] {\footnotesize$s_{2}$} ;
+        \node[lightgray_node, label=left:{\phantom{\footnotesize$1$}}] (s3) [below = of goal] {\footnotesize$s_{3}$} ;
+        \node[black_node, label=below:{\footnotesize$3$}] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
+        \node[lightgray_node] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
+        \node[lightgray_node] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
+        \draw[->, line width=0.3mm, color=black] (s1) to (goal) ;
+        \draw[->, line width=0.3mm, color=black] (s2) to (s1) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s3) to (goal) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s6) to (s3) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s4) to[bend right=5] (s6) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s4) to (s1) ;
+        \draw[->, line width=0.3mm, color=black] (s4) to[bend right=5] (s2) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s5) to (s2) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s5) to (s4) ;
+        \draw[->, line width=0.3mm, color=lightgray] (4.4,-2.9) to (s5) ;
     \end{tikzpicture}
 }
 \only<3> {
     \begin{tikzpicture}
     [
         node distance=21mm and 22mm, on grid, auto, label distance=-0.5mm,
+        lightgray_node/.style={circle, draw=lightgray!100, fill=lightgray!0, very thick, minimum height=8mm, minimum width=8mm},
         black_node/.style={circle, draw=black!100, fill=black!0, very thick, minimum height=8mm, minimum width=8mm},
-        red_node/.style={circle, draw=red!100, fill=red!0, very thick, minimum height=8mm, minimum width=8mm},
-        blue_node/.style={circle, draw=blue!100, fill=blue!0, very thick, minimum height=8mm, minimum width=8mm},
-        magenta_node/.style={circle, draw=magenta!100, fill=magenta!0, very thick, minimum height=8mm, minimum width=8mm},
     ]
-        \node[magenta_node, accepting, label=above:{\footnotesize$0$}] (goal) {\footnotesize$s^*$} ;
-        \node[blue_node, label=above:{\footnotesize$1$}] (s1) [right = of goal] {\footnotesize$s_{1}$} ;
-        \node[blue_node, label=above:{\footnotesize$2$}] (s2) [right = of s1] {\footnotesize$s_{2}$} ;
-        \node[red_node, label=left:{\footnotesize$1$}] (s3) [below = of goal] {\footnotesize$s_{3}$} ;
-        \node[magenta_node, label=below:{\footnotesize$3$}] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
-        \node[black_node] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
-        \node[red_node, label=left:{\footnotesize$2$}] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
-        \draw[->, line width=0.3mm, color=blue] (s1) -- (goal) ;
-        \draw[->, line width=0.3mm, color=blue] (s2) -- (s1) ;
-        \draw[->, line width=0.3mm, color=red] (s3) -- (goal) ;
-        \draw[->, line width=0.3mm, color=red] (s6) -- (s3) ;
-        \draw[->, line width=0.3mm, color=red] (s4) -- (s6) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s1) ;
-        \draw[->, line width=0.3mm, color=blue] (s4) -- (s2) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s2) ;
-        \draw[->, line width=0.3mm, color=black] (s5) -- (s4) ;
-        \draw[->, line width=0.3mm, color=black] (4.4,-3) -- (s5) ;
+        \node[black_node, accepting, label=above:{\footnotesize$0$}] (goal) {\footnotesize$s^*$} ;
+        \node[black_node, label=above:{\footnotesize$1$}] (s1) [right = of goal] {\footnotesize$s_{1}$} ;
+        \node[black_node, label=above:{\footnotesize$2$}] (s2) [right = of s1] {\footnotesize$s_{2}$} ;
+        \node[black_node, label=left:{\footnotesize$1$}] (s3) [below = of goal] {\footnotesize$s_{3}$} ;
+        \node[black_node, label=below:{\footnotesize$3$}] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
+        \node[lightgray_node] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
+        \node[black_node, label=left:{\footnotesize$2$}] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
+        \draw[->, line width=0.3mm, color=black] (s1) to (goal) ;
+        \draw[->, line width=0.3mm, color=black] (s2) to (s1) ;
+        \draw[->, line width=0.3mm, color=black] (s3) to (goal) ;
+        \draw[->, line width=0.3mm, color=black] (s6) to (s3) ;
+        \draw[->, line width=0.3mm, color=black] (s4) to[bend right=5] (s6) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s4) to (s1) ;
+        \draw[->, line width=0.3mm, color=black] (s4) to[bend right=5] (s2) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s5) to (s2) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s5) to (s4) ;
+        \draw[->, line width=0.3mm, color=lightgray] (4.4,-2.9) to (s5) ;
     \end{tikzpicture}
 }
 \only<4> {
@@ -1063,16 +756,16 @@ When to stop a rollout?
         \node[black_node, label=below:{\footnotesize$3$}] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
         \node[grey_node] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
         \node[black_node, label=left:{\footnotesize$2$}] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
-        \draw[->, line width=0.3mm, color=lightgray] (s1) -- (goal) ;
-        \draw[->, line width=0.3mm, color=lightgray] (s2) -- (s1) ;
-        \draw[->, line width=0.3mm, color=lightgray] (s3) -- (goal) ;
-        \draw[->, line width=0.3mm, color=lightgray] (s6) -- (s3) ;
-        \draw[->, line width=0.3mm, color=lightgray] (s4) -- (s6) ;
-        \draw[->, line width=0.3mm, color=lightgray] (s4) -- (s1) ;
-        \draw[->, line width=0.3mm, color=lightgray] (s4) -- (s2) ;
-        \draw[->, line width=0.3mm, color=lightgray] (s5) -- (s2) ;
-        \draw[->, line width=0.3mm, color=lightgray] (s5) -- (s4) ;
-        \draw[->, line width=0.3mm, color=lightgray] (4.4,-3) -- (s5) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s1) to (goal) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s2) to (s1) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s3) to (goal) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s6) to (s3) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s4) to[bend right=5] (s6) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s4) to (s1) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s4) to[bend right=5] (s2) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s5) to (s2) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s5) to (s4) ;
+        \draw[->, line width=0.3mm, color=lightgray] (4.4,-2.9) to (s5) ;
     \end{tikzpicture}
 }
 \only<5> {
@@ -1089,16 +782,16 @@ When to stop a rollout?
         \node[black_node, label=below:{\footnotesize$3$}] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
         \node[grey_node] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
         \node[black_node, label=left:{\footnotesize$2$}] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
-        \draw[->, line width=0.3mm, color=black] (s1) -- (goal) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s3) -- (goal) ;
-        \draw[->, line width=0.3mm, color=black] (s6) -- (s3) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s6) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s2) ;
-        \draw[->, line width=0.3mm, color=lightgray] (s5) -- (s2) ;
-        \draw[->, line width=0.3mm, color=lightgray] (s5) -- (s4) ;
-        \draw[->, line width=0.3mm, color=lightgray] (4.4,-3) -- (s5) ;
+        \draw[->, line width=0.3mm, color=black] (s1) to (goal) ;
+        \draw[->, line width=0.3mm, color=black] (s2) to (s1) ;
+        \draw[->, line width=0.3mm, color=black] (s3) to (goal) ;
+        \draw[->, line width=0.3mm, color=black] (s6) to (s3) ;
+        \draw[->, line width=0.3mm, color=black] (s4) to[bend right=5] (s6) ;
+        \draw[->, line width=0.3mm, color=black] (s4) to (s1) ;
+        \draw[->, line width=0.3mm, color=black] (s4) to[bend right=5] (s2) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s5) to (s2) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s5) to (s4) ;
+        \draw[->, line width=0.3mm, color=lightgray] (4.4,-2.9) to (s5) ;
     \end{tikzpicture}
 }
 \only<6> {
@@ -1115,51 +808,52 @@ When to stop a rollout?
         \node[black_node, label=below:{\footnotesize$\text{\cancel{3}}\;\alert{2}$}] (s4) [below = of s1] {\footnotesize$s_{4}$} ;
         \node[grey_node] (s5) [below = of s2] {\footnotesize$s_{5}$} ;
         \node[black_node, label=left:{\footnotesize$2$}] (s6) [below = of s3] {\footnotesize$s_{6}$} ;
-        \draw[->, line width=0.3mm, color=black] (s1) -- (goal) ;
-        \draw[->, line width=0.3mm, color=black] (s2) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s3) -- (goal) ;
-        \draw[->, line width=0.3mm, color=black] (s6) -- (s3) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s6) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s1) ;
-        \draw[->, line width=0.3mm, color=black] (s4) -- (s2) ;
-        \draw[->, line width=0.3mm, color=lightgray] (s5) -- (s2) ;
-        \draw[->, line width=0.3mm, color=lightgray] (s5) -- (s4) ;
-        \draw[->, line width=0.3mm, color=lightgray] (4.4,-3) -- (s5) ;
+        \draw[->, line width=0.3mm, color=black] (s1) to (goal) ;
+        \draw[->, line width=0.3mm, color=black] (s2) to (s1) ;
+        \draw[->, line width=0.3mm, color=black] (s3) to (goal) ;
+        \draw[->, line width=0.3mm, color=black] (s6) to (s3) ;
+        \draw[->, line width=0.3mm, color=black] (s4) to[bend right=5] (s6) ;
+        \draw[->, line width=0.3mm, color=black] (s4) to (s1) ;
+        \draw[->, line width=0.3mm, color=black] (s4) to[bend right=5] (s2) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s5) to (s2) ;
+        \draw[->, line width=0.3mm, color=lightgray] (s5) to (s4) ;
+        \draw[->, line width=0.3mm, color=lightgray] (4.4,-2.9) to (s5) ;
     \end{tikzpicture}
 }
 \end{column}
 \end{columns}
 \end{frame}
 
-
 \section{Experiments}
 
-\subsection{Settings}
+\begin{frame}{Experiments}
 
-\begin{frame}{Common Settings}
+Systematic analysis of the influence of each feature.
 \begin{itemize}
-    \item Same neural network architecture as \textcite{Ferber.etal/2022, OToole/2022}
-    \begin{figure}
-        \centering
-        \includegraphics[width=9cm]{figures/resnet.png}
-        \caption{Residual network.}
-    \end{figure}
-    \pause
-    \item The experiments were divided into two parts: small state spaces and large state spaces.
-    \pause
-    \item Each task in the dataset has $50$ initial states.
-    \pause
-    \item Each experiment was run multiple times with different seeds.
+    \item What is the contribution of the sampling algorithm?
+    \item What is the impact of the regression limit?
+    \item How much do random samples improve the sample set?
+    \item How much do our \h-value improvement techniques refine the estimators?
+    \item What is the quality of the \h-values produced by the learned heuristics?
+    \item Does the quality of the \h-values reflect in the search?
 \end{itemize}
+
+\bigskip The experiments were divided into two parts: small state spaces and large state spaces.
+
 \end{frame}
 
-\begin{frame}{Baseline}
+\begin{frame}{Common Settings}
+\begin{figure}
+    \centering
+    \includegraphics[width=7cm]{figures/resnet.png}
+    \caption{Residual network.}
+\end{figure}
 \begin{itemize}
-    \item For comparative purposes, we experiment with a baseline configuration based on previous approaches from the literature.
-    \pause
-    \item The sampling method uses \alert{random walks} with a regression limit $L = 200$.
-    \pause
-    \item Improvement strategies SAI and SUI are turned off.
+    \item Same neural network architecture as \citet{ferber2022neural} and \citet{otoole2022sampling}.
+    \item Baseline \hnnbase: Random walk sampling, regression limit $L = 200$, and without h-value improvement techniques.
+    \item FSM samples $10\,\%$ of the samples with BFS and the rest with RW.
+    \item Dataset from \citet{ferber2022neural} moderate tasks.
+    \item Each domain: $N$ tasks $\times$ $25$ models $\times$ $50$ initial states.
 \end{itemize}
 \end{frame}
 
@@ -1167,63 +861,93 @@ When to stop a rollout?
 
 \begin{frame}{Small State Spaces}
 \begin{itemize}
-    \item Tasks of the International Planning Competition (IPC) where the forward state space can be enumerated.
-    \pause
+    \item Tasks where the forward state space can be enumerated.
     \begin{itemize}
         \item Allows the generation of all states in the state space and their perfect cost-to-goal estimates (\hstar).
-        \pause
         \item Better control and understanding of the behavior of each technique.
     \end{itemize}
-    \pause
-    \item Number of samples $N$ equal to $1$\% of the total states of the forward state space.
-    \pause
+    \bigskip
     \item All tasks are solved, so the number of expansions is used as the metric for the quality of the learned heuristic.
     \begin{itemize}
         \item \alert{Fewer expansions} means better heuristics!
     \end{itemize}
-    \pause
-    \item Domains and their state space sizes: Blocks (66K), Grid (452K), N-Puzzle (181K), Rovers (566K), Scanalyzer (46K), Transport (638K), and VisitAll (80K).
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Sampling Algorithm} % Table 3
+\begin{frame}{\small What is the contribution of the sampling algorithm?} % Table 3
 \begin{table}[]
+\only<1> {
 \begin{tabular}{l|rrrr}
-    & \multicolumn{4}{c}{Expanded states} \\
-    Sampling algorithm & BFS & DFS & RW & BFS+RW \\
+    Sampling method & BFS\textsubscript{200} & DFS\textsubscript{200} & RW\textsubscript{200} & FSM\textsubscript{200} \\
     \hline
-    Geo. mean & 446.72 & 326.66 & 79.78 & 73.12 \\
+    Expanded states & 446.72 & 326.66 & 79.78 & 73.12 \\
 \end{tabular}
+}
+\only<2> {
+\begin{tabular}{l|rrr}
+    Sampling method & & & FSM\textsubscript{200} \\
+    \hline
+    Expanded states & & \hspace{3.4cm} & 73.12 \\
+\end{tabular}
+}
+\only<3> {
+\begin{tabular}{l|rrr}
+    Sampling method & & FSM\textsubscript{200} & \\
+    \hline
+    Expanded states & \hspace{2cm} & 73.12 & \hspace{1cm} \\
+\end{tabular}
+}
+\only<4> {
+\begin{tabular}{l|rrr}
+    Sampling method & & FSM\textsubscript{200} & \\
+    \hline
+    Expanded states & \hspace{0.5cm} & 73.12 & \hspace{2cm} \\
+\end{tabular}
+}
+\only<5> {
+\begin{tabular}{l|rrr}
+    Sampling method & FSM\textsubscript{200} & & \\
+    \hline
+    Expanded states & 73.12 & & \hspace{2cm} \\
+\end{tabular}
+}
 \end{table}
+
+\only<1> {
 \begin{itemize}
-    \pause
-    \item BFS and DFS have extreme sample distributions. RW and our approach (BFS+RW) have a balanced sample distribution over the state space.
-    \pause
+    \item BFS and DFS have extreme sample distributions. RW and our approach (FSM) have a balanced sample distribution over the state space.
     \item Blocks expands $5047$ states with BFS and Grid $4102$ with DFS, more than $25$ and $10$ times (resp.) than with the other techniques.
 \end{itemize}
+}
+\only<2-> {
+\vspace{3.3cm}
+}
 \end{frame}
 
-\begin{frame}{Regression Limit} % Table 4
+\begin{frame}{\small What is the impact of the regression limit?} % Table 4
 \begin{table}[]
 \begin{tabular}{l|rrr}
-    & \multicolumn{3}{c}{Expanded states} \\
-    Regression Limit & \default & \facts & \meanfx \\
+    Sampling method & FSM\textsubscript{\default} & FSM\textsubscript{\facts} & FSM\textsubscript{\meanfx} \\
     \hline
-    Geo. mean & 73.12 & 63.36 & 69.48 \\
+    Expanded states & 73.12 & 63.36 & 69.48 \\
 \end{tabular}
 \end{table}
+\only<1> {
+\vspace{3.3cm}
+}
+\only<2-> {
 \begin{itemize}
-    \pause
     \item Our approaches outperform the baseline. \facts has the best performance, but...
-    \pause
     \item \meanfx outperforms the other techniques in 4 of the 7 domains.
     \begin{itemize}
         \item Blocks expands $185$ states, more than twice as many as the other regression limits.
     \end{itemize}
 \end{itemize}
+\vspace{0.55cm}
+}
 \end{frame}
 
-\begin{frame}{Random Samples} % Table 5
+\begin{frame}{\small How much do random samples improve the sample set?} % Table 5
 \begin{columns}
 \begin{column}{0.5\textwidth}
     \begin{table}[]
@@ -1245,18 +969,16 @@ When to stop a rollout?
 \end{column}
 \begin{column}{0.5\textwidth}
     \begin{itemize}
-        \pause
         \item Improves performance up to $20$\% of random samples, then degrades.
-        \pause
         \item Up to $50$\% of random samples the expanded states holds close ($35.13$~vs~$38.76$).
     \end{itemize}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Quality of Estimates (over the sample set)} % Table 7
+\begin{frame}{\small How much do our \h-value improvement techniques refine the estimators?} % Table 7
 \begin{columns}
-\begin{column}{0.6\textwidth}  
+\begin{column}{0.5\textwidth}  
     \begin{table}[]
     \begin{tabular}{l|rr}
         & \multicolumn{2}{c}{Mean difference \hstar-\hvalue} \\
@@ -1276,23 +998,21 @@ When to stop a rollout?
 \end{column}
 \begin{column}{0.4\textwidth}
     \begin{itemize}
-        \pause
-        \item Our approach (BFS+RW, \meanfx, SAI and SUI) improves by $20$~times the approximation of the sample set estimates to \hstar.
-        \pause
+        \item All our techniques (FSM, \meanfx, SAI and SUI) improves by $20$~times the approximation of the sample set estimates to \hstar.
         \item Only \meanfx improves the mean difference to $5.56$. Only SAI and SUI improves to $10.95$.
     \end{itemize}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Quality of Estimates (over the forward state space)} % Table 8
+\begin{frame}{\small What is the quality of the \h-values produced by the learned heuristics?} % Table 8
 \begin{columns}
 \begin{column}{0.5\textwidth}
     \begin{table}[]
     \resizebox{\linewidth}{!}{
     \begin{tabular}{l|rr>{\onslide<2->}r<{\onslide}>{\onslide<3->}r<{\onslide}}
          & \multicolumn{4}{>{\onslide<1->}c<{\onslide}}{Mean difference \hstar-\hvalue} \\
-        Domain & \hff & \hnnbase & \hnnbfsrwl{\meanfx} & \hnnrs \\
+        Domain & \hff & \hnnbase & \hnnl{\meanfx} & \hnnrs \\
         \hline
         Blocks & 6.76 & 26.46 & 2.91 & 2.42 \\
         Grid & 3.72 & 26.85 & 2.73 & 9.78 \\
@@ -1308,37 +1028,29 @@ When to stop a rollout?
 \end{column}
 \begin{column}{0.5\textwidth}
     \begin{itemize}
-        \item The mean difference \hstar-$h$ over the FS of baseline \hnnbase is more than $20$ times greater than \hff.
+        \item The mean difference \hstar-$h$ over the forward state space of baseline \hnnbase is more than $20$ times greater than \hff.
         \pause
-        \item Our approach \hnnbfsrwl{\meanfx} improves considerably: close to \hff.
+        \item Our approach \hnnl{\meanfx} improves considerably: close to \hff.
         \pause
         \item Adding random samples worsens the mean difference \hstar-$h$.
-        \pause
-        \begin{itemize}
-            \item Improving the mean difference \hstar-$h$ doesn't necessarily reduce the expanded states...
-        \end{itemize}
     \end{itemize}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Comparison of Heuristic Functions} % Table 9
+\begin{frame}{\small Does the quality of the \h-values reflect in the search?} % Table 9
 \begin{table}[]
 \begin{tabular}{l|r>{\onslide<2->}r<{\onslide}>{\onslide<3->}r<{\onslide}>{\onslide<4->}r<{\onslide}>{\onslide<5->}r<{\onslide}}
-     & \multicolumn{5}{c}{Expanded states} \\
-    Heuristic & \hstar & \hff & \hnnbase & \hnnbfsrwl{\meanfx} & \hnnrs \\
+    Heuristic & \hstar & \hff & \hnnbase & \hnnl{\meanfx} & \hnnrs \\
     \hline
-    Geo. mean & 14.53 & 38.98 & 81.86 & 53.91 & 35.13 \\
+    Expanded states & 14.53 & 38.98 & 81.86 & 53.91 & 35.13 \\
 \end{tabular}
 \end{table}
-
 \pause \pause \pause
-
 \begin{itemize}
-    \item Remains the relative order of quality of estimates over the FS.
+    \item Remains the relative order of quality of estimates over the forward state space.
     \pause
     \item But not. Random samples worsen the quality of estimates but reduce the expanded states.
-    \pause
     \item Our approach with random samples (\hnnrs) outperforms \hff.
 \end{itemize}
 \end{frame}
@@ -1347,23 +1059,19 @@ When to stop a rollout?
 
 \begin{frame}{Large State Spaces}
 \begin{itemize}
-    \item Validate our findings from experiments in small state spaces.
-    \pause
-    \item Fixed number of samples $N$ based on computational resources.
-    \pause
+    \item Validate our findings from experiments in small state spaces...
+    \begin{itemize}
+        \item ...and how does our approach compare with logic-based heuristics and other learned heuristics in the literature?
+    \end{itemize}
+    \bigskip
     \item Coverage (percentage of solved tasks) is used as the metric for the quality of the learned heuristic.
     \begin{itemize}
         \item \alert{Greater coverage} means better heuristics!
     \end{itemize}
-    \pause
-    \item Dataset from \textcite{Ferber.etal/2022} moderate tasks.
-    \begin{itemize}
-        \item Domains and their number of tasks: Blocks (5), Depot\footnote[1]{Not in small state space experiments.} (6), Grid (2), N-Puzzle (8), Pipes-NT$^\text{\textbf{*}}$ (10), Rovers (8), Scanalyzer (6), Storage$^\text{\textbf{*}}$ (4), Transport (8), and VisitAll (6).
-    \end{itemize}
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Comparison of Heuristic Functions (Coverage)} % Table 12
+\begin{frame}{Comparison of Heuristic Functions} % Table 12
 \begin{columns}
 \begin{column}{0.5\textwidth}  
     \begin{table}[]
@@ -1389,54 +1097,9 @@ When to stop a rollout?
 \end{column}
 \begin{column}{0.5\textwidth}
     \begin{itemize}
-        \pause
         \item \hff dominates in most domains.
-        \pause
         \item Our approach \hnnrs improves the baseline \hnnbase by about $31$\%, with competitive coverage in most domains.
-        \pause
         \item Also, outperforms \hgc ($73.18$ vs $70.39$) with higher or equal coverage in $6$ out of $10$ domains.
-    \end{itemize}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{Comparison of Heuristic Functions (Expanded states)} % Table 12
-\begin{columns}
-\begin{column}{0.5\textwidth}  
-    \begin{table}[]
-    \resizebox{\linewidth}{!}{
-    \begin{tabular}{l|rrrr}
-         & \multicolumn{4}{c}{Expanded states} \\
-        Domain & \hff & \hgc & \hnnbase & \hnnrs \\
-        \hline
-        Blocks & 36482 & 87026 & 5349 & 7335 \\
-        Depot & 137053 & 874333 & 35972 & 29984 \\
-        Grid & 45117 & 29990 & 15040 & 27009 \\
-        N-Puzzle & - & - & - & - \\
-        Pipes-NT & 83825 & 10416 & 304764 & 17389 \\
-        Rovers & 38 & 466 & 596 & 30 \\
-        Scanalyzer & 408 & 3914 & 27570 & 300 \\
-        Storage & - & - & - & - \\
-        Transport & 8342 & 253501 & 139311 & 12149 \\
-        VisitAll & 248269 & 337 & 80155 & 5110 \\
-        \hline
-        Geo. mean & 12529 & 15706 & 25184 & 3937 \\
-    \end{tabular}}
-    \end{table}
-\end{column}
-\begin{column}{0.5\textwidth}
-    \begin{itemize}
-        \pause
-        \item Our approach \hnnrs is the most informed on commonly solved tasks.
-        \begin{itemize}
-            \item Improves \hff by $3$ times.
-        \end{itemize}
-        \pause
-        \item In all domains except Transport, our approach \hnnrs expands fewer states when compared to \hff.
-        \pause
-        \begin{itemize}
-            \item Indicating that the lower coverage is an effect of the lower expansion speed of the NN-based heuristics.
-        \end{itemize}
     \end{itemize}
 \end{column}
 \end{columns}
@@ -1447,18 +1110,15 @@ When to stop a rollout?
 \begin{tabular}{l|r}
     Technique & Avg. coverage \\
     \hline
-    \hboot~\parencite{Ferber.etal/2022} & 45.40 \\
-    \hnrsl~\parencite{OToole/2022} & 58.80 \\
+    \hboot~\citep{ferber2022neural} & 45.40 \\
+    \hnrsl~\citep{otoole2022sampling} & 58.80 \\
     \hnnrs~(Our approach) & 72.82 \\
 \end{tabular}
 \end{table}
 \bigskip
 \begin{itemize}
-    \pause
     \item All techniques use the same test dataset and NN architecture.
-    \pause
     \item \hboot uses considerably more computational resources than the other techniques.
-    \pause
     \item Our approach outperforms other techniques.
 \end{itemize}
 \end{frame}
@@ -1467,25 +1127,28 @@ When to stop a rollout?
 
 \begin{frame}{Conclusion}
 \begin{itemize}
-    \pause
-    \item For the samples obtained through regression, a distribution covering various portions of the state space without repeated samples close to the goal works best.
-    \pause
-    \item Both the sample size and reasonable cost-to-goal estimates contribute to search performance, with the latter being more important.
-    \pause
-    \item Fewer samples with more accurate $h$-values is better than having more samples with inaccurate $h$-values.
-    \pause
-    \item $h$-value improvement strategy SUI and adaptative rollout limit \meanfx have the most postiive impact on sampling quality.
-    \pause
+    \item A distribution covering various portions of the state space without repeated samples close to the goal works best.
+    \item Both the sample distribution and reasonable cost-to-goal estimates contribute to search performance.
+    \item The \h-value improvement technique SUI and adaptative rollout limit \meanfx have the most positive impact on sampling quality.
     \item Our approach outperforms \hgc but not \hff.
-    \pause
     \begin{itemize}
         \item \hff has access to the entire model, whereas our approach only uses a minimal part of it.
     \end{itemize}
-    \pause
     \item Approaches with few samples and computational resources can also be efficient.
 \end{itemize}
 \end{frame}
 
-\printbibliography
+{\setbeamercolor{palette primary}{fg=white, bg=inf_tertiary}
+\begin{frame}[standout]
+  Questions?
+
+  \small \email{rvbettker@inf.ufrgs.br}
+\end{frame}
+}
+
+\begin{frame}[allowframebreaks]{References}
+  \bibliography{../references}
+  \bibliographystyle{authordate1}
+\end{frame}
 
 \end{document}
